@@ -1,112 +1,80 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Plugin, PluginManifest, TFile, WorkspaceLeaf } from 'obsidian';
+import { VIEW_TYPE_TODO } from './constants';
+import { TodoItemView } from './ui/TodoItemView';
+import { TodoItem, TodoItemStatus } from './model/TodoItem';
+import { TodoIndex } from './model/TodoIndex';
 
-interface MyPluginSettings {
-	mySetting: string;
+interface TodoPluginSettings {
+  mySetting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
+const DEFAULT_SETTINGS: TodoPluginSettings = {
+  mySetting: 'default',
+};
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class TodoPlugin extends Plugin {
+  settings: TodoPluginSettings;
 
-	async onload() {
-		console.log('loading plugin');
+  private todoIndex: TodoIndex;
+  private view: TodoItemView;
 
-		await this.loadSettings();
+  constructor(app: App, manifest: PluginManifest) {
+    super(app, manifest);
+    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this));
+  }
 
-		this.addRibbonIcon('dice', 'Sample Plugin', () => {
-			new Notice('This is a notice!');
-		});
+  async onload(): Promise<void> {
+    await this.loadSettings();
 
-		this.addStatusBarItem().setText('Status Bar Text');
+    this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
+      const props = {
+        openFile: (filePath: string) => {
+          const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+          this.app.workspace.splitActiveLeaf().openFile(file);
+        },
+        toggleTodo: (todo: TodoItem, newStatus: TodoItemStatus) => {
+          this.todoIndex.setStatus(todo, newStatus);
+        },
+      };
+      this.view = new TodoItemView(leaf, props);
+      return this.view;
+    });
 
-		this.addCommand({
-			id: 'open-sample-modal',
-			name: 'Open Sample Modal',
-			// callback: () => {
-			// 	console.log('Simple Callback');
-			// },
-			checkCallback: (checking: boolean) => {
-				let leaf = this.app.workspace.activeLeaf;
-				if (leaf) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
-			}
-		});
+    if (this.app.workspace.layoutReady) {
+      this.initLeaf();
+      await this.prepareIndex();
+    } else {
+      this.registerEvent(this.app.workspace.on('layout-ready', this.initLeaf.bind(this)));
+      this.registerEvent(this.app.workspace.on('layout-ready', async () => await this.prepareIndex()));
+    }
+  }
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+  onunload(): void {
+    this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).forEach((leaf) => leaf.detach());
+  }
 
-		this.registerCodeMirror((cm: CodeMirror.Editor) => {
-			console.log('codemirror', cm);
-		});
+  async loadSettings(): Promise<void> {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
 
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+  async saveSettings(): Promise<void> {
+    await this.saveData(this.settings);
+  }
 
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-	}
+  initLeaf(): void {
+    if (this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).length) {
+      return;
+    }
+    this.app.workspace.getRightLeaf(false).setViewState({
+      type: VIEW_TYPE_TODO,
+    });
+  }
 
-	onunload() {
-		console.log('unloading plugin');
-	}
+  async prepareIndex(): Promise<void> {
+    await this.todoIndex.initialize();
+  }
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		let {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		let {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue('')
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
+  tick(todos: TodoItem[]): void {
+    this.view.render(todos);
+  }
 }

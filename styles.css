@@ -1,4 +1,33 @@
-/* Sets all the text color to red! */
-body {
-    color: red;
+div.todo-item-view-container {
+}
+
+div.todo-item-view-item {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+div.todo-item-view-item p {
+    margin: 0;
+}
+
+div.todo-item-view-item-checkbox {
+    flex-basis: 25px;
+    flex-shrink: 0;
+}
+
+div.todo-item-view-item-description {
+    flex-grow: 1;
+    padding-left: 4px;
+}
+
+div.todo-item-view-item-link {
+    flex-basis: 25px;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding-left: 8px;
+}
+
+div.todo-item-view-item-link svg {
+    fill: #cccccc;
 }
