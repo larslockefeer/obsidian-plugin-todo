@@ -1,45 +1,27 @@
-## Obsidian Sample Plugin
+## Obsidian TODO Plugin
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Text-based GTD in Obsidian.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="BuyMeACoffee" width="100">](https://www.buymeacoffee.com/larslockefeer)
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+### Features
+- Aggregates all outstanding TODOs in your vault and lists them in a single view
+- Split out TODOs by type ("Today", "Scheduled", "Inbox" and "Someday/Maybe")
+- Schedule a TODO for a specific date by adding a tag #YYYY-DD-MM
+- Mark a TODO as Someday/Maybe by adding a tag #someday
+- Complete TODOs from the list view
+- Quickly jump to the file in which a TODO is found from the list view
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+### Screenshots
+![](./assets/today.png)
+![](./assets/scheduled.png)
+![](./assets/inbox.png)
+![](./assets/someday.png)
 
-
-### Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments.
-- Publish the release.
-
-### Adding your plugin to the community plugin list
-
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-### How to use
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
-
-### Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-### API Documentation
-
-See https://github.com/obsidianmd/obsidian-api
+### Roadmap
+- [ ] Scroll to correct line in file when jumping from list view
+- [ ] (Re)schedule TODOs from the list view
+- [ ] Persist cache, on reopening only reindex files changed since Obsidian was closed
+- [ ] Filter items list view by tags / freeform search
+- [ ] Improve UI and themeability
+- [ ] Integrate with daily notes plugin to ensure unscheduled TODOs in a daily note are listed in "Today"
