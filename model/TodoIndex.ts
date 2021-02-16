@@ -19,7 +19,8 @@ export class TodoIndex {
     let numberOfTodos = 0;
     const timeStart = new Date().getTime();
 
-    for (const file of this.vault.getMarkdownFiles()) {
+    const markdownFiles = this.vault.getMarkdownFiles();
+    for (const file of markdownFiles) {
       const todos = await this.parseTodosInFile(file);
       numberOfTodos += todos.length;
       if (todos.length > 0) {
@@ -29,7 +30,7 @@ export class TodoIndex {
 
     const totalTimeMs = new Date().getTime() - timeStart;
     console.log(
-      `[obsidian-plugin-todo] Parsed ${numberOfTodos} TODOs from ${this.todos.size} markdown files in (${
+      `[obsidian-plugin-todo] Parsed ${numberOfTodos} TODOs from ${markdownFiles.length} markdown files in (${
         totalTimeMs / 1000.0
       }s)`,
     );
@@ -68,9 +69,12 @@ export class TodoIndex {
   }
 
   private async parseTodosInFile(file: TFile): Promise<TodoItem[]> {
+    // TODO: Does it make sense to index completed TODOs at all?
     const todoParser = new TodoParser();
     const fileContents = await this.vault.cachedRead(file);
-    return todoParser.parseTasks(file.path, fileContents);
+    return todoParser
+      .parseTasks(file.path, fileContents)
+      .then((todos) => todos.filter((todo) => todo.status === TodoItemStatus.Todo));
   }
 
   private registerEventHandlers() {
@@ -91,10 +95,7 @@ export class TodoIndex {
   }
 
   private invokeListeners() {
-    // TODO: Does it make sense to index completed TODOs at all?
-    const todos = ([] as TodoItem[])
-      .concat(...Array.from(this.todos.values()))
-      .filter((todo) => todo.status === TodoItemStatus.Todo);
+    const todos = ([] as TodoItem[]).concat(...Array.from(this.todos.values()));
     this.listeners.forEach((listener) => listener(todos));
   }
 }

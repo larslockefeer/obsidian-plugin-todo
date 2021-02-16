@@ -22,10 +22,22 @@ export class TodoItem {
 
   public status: TodoItemStatus;
   public description: string;
+  public actionDate?: Date;
+  public isSomedayMaybeNote: boolean;
 
-  constructor(status: TodoItemStatus, description: string, sourceFilePath: string, startIndex: number, length: number) {
+  constructor(
+    status: TodoItemStatus,
+    description: string,
+    isSomedayMaybeNote: boolean,
+    sourceFilePath: string,
+    startIndex: number,
+    length: number,
+    actionDate?: Date,
+  ) {
     this.status = status;
     this.description = description;
+    this.actionDate = actionDate;
+    this.isSomedayMaybeNote = isSomedayMaybeNote;
     this.sourceFilePath = sourceFilePath;
     this.startIndex = startIndex;
     this.length = length;

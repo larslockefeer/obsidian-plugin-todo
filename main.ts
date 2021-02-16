@@ -1,6 +1,6 @@
 import { App, Plugin, PluginManifest, TFile, WorkspaceLeaf } from 'obsidian';
 import { VIEW_TYPE_TODO } from './constants';
-import { TodoItemView } from './ui/TodoItemView';
+import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
 
@@ -27,7 +27,9 @@ export default class TodoPlugin extends Plugin {
     await this.loadSettings();
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
+      const todos: TodoItem[] = [];
       const props = {
+        todos: todos,
         openFile: (filePath: string) => {
           const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
           this.app.workspace.splitActiveLeaf().openFile(file);
@@ -75,6 +77,11 @@ export default class TodoPlugin extends Plugin {
   }
 
   tick(todos: TodoItem[]): void {
-    this.view.render(todos);
+    this.view.setProps((currentProps: TodoItemViewProps) => {
+      return {
+        ...currentProps,
+        todos: todos,
+      };
+    });
   }
 }

@@ -6,14 +6,24 @@ export class TodoParser {
     return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
   }
 
-  parseTask(filePath: string, entry: RegExpMatchArray): TodoItem {
+  private parseTask(filePath: string, entry: RegExpMatchArray): TodoItem {
     const todoItemOffset = 2; // Strip off `-|* `
+    const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
+    const description = entry[3];
+
+    const datePattern = /#(\d{4}-\d{2}-\d{2})/g;
+    const somedayPattern = /#(someday)/g;
+    const dateMatches = description.match(datePattern);
+    const actionDate = dateMatches != null ? new Date(dateMatches[0]?.substring(1)) : undefined;
+
     return new TodoItem(
-      entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo,
-      entry[3],
+      status,
+      description,
+      description.match(somedayPattern) != null,
       filePath,
-      entry.index + todoItemOffset,
+      (entry.index ?? 0) + todoItemOffset,
       entry[0].length - todoItemOffset,
+      actionDate,
     );
   }
 }
