@@ -41,7 +41,7 @@ export class TodoIndex {
 
   setStatus(todo: TodoItem, newStatus: TodoItemStatus): void {
     const file = this.vault.getAbstractFileByPath(todo.sourceFilePath) as TFile;
-    const fileContents = this.vault.cachedRead(file);
+    const fileContents = this.vault.read(file);
     fileContents.then((c: string) => {
       const newTodo = `[${newStatus === TodoItemStatus.Done ? 'x' : ' '}] ${todo.description}`;
       const newContents = c.substring(0, todo.startIndex) + newTodo + c.substring(todo.startIndex + todo.length);
@@ -50,11 +50,13 @@ export class TodoIndex {
   }
 
   private indexAbstractFile(file: TAbstractFile) {
+    if (!(file instanceof TFile)) {
+      return;
+    }
     this.indexFile(file as TFile);
   }
 
   private indexFile(file: TFile) {
-    console.log(`[obsidian-plugin-todo] Indexing ${file.path}`);
     this.parseTodosInFile(file).then((todos) => {
       this.todos.set(file.path, todos);
       this.invokeListeners();

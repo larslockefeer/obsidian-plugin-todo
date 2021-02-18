@@ -4,17 +4,7 @@ import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
 
-interface TodoPluginSettings {
-  mySetting: string;
-}
-
-const DEFAULT_SETTINGS: TodoPluginSettings = {
-  mySetting: 'default',
-};
-
 export default class TodoPlugin extends Plugin {
-  settings: TodoPluginSettings;
-
   private todoIndex: TodoIndex;
   private view: TodoItemView;
 
@@ -24,8 +14,6 @@ export default class TodoPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    await this.loadSettings();
-
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
@@ -53,14 +41,6 @@ export default class TodoPlugin extends Plugin {
 
   onunload(): void {
     this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).forEach((leaf) => leaf.detach());
-  }
-
-  async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
-
-  async saveSettings(): Promise<void> {
-    await this.saveData(this.settings);
   }
 
   initLeaf(): void {
