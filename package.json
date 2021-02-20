@@ -17,6 +17,7 @@
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-typescript": "^6.0.0",
     "@types/jest": "^26.0.20",
+    "@types/luxon": "^1.26.0",
     "@types/node": "^14.14.2",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
@@ -42,5 +43,8 @@
     "*.{js,ts,ts}": [
       "eslint --fix"
     ]
+  },
+  "dependencies": {
+    "luxon": "^1.26.0"
   }
 }

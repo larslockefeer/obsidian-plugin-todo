@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { ItemView, MarkdownRenderer, WorkspaceLeaf } from 'obsidian';
 import { VIEW_TYPE_TODO } from '../constants';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
@@ -129,17 +130,13 @@ export class TodoItemView extends ItemView {
   }
 
   private filterForState(value: TodoItem, _index: number, _array: TodoItem[]): boolean {
-    const isToday = (date: Date) => {
-      const today = new Date();
-      return (
-        date.getDate() == today.getDate() &&
-        date.getMonth() == today.getMonth() &&
-        date.getFullYear() == today.getFullYear()
-      );
+    const isToday = (date: DateTime) => {
+      const today = DateTime.now();
+      return date.day == today.day && date.month == today.month && date.year == today.year;
     };
 
-    const isBeforeToday = (date: Date) => {
-      const today = new Date();
+    const isBeforeToday = (date: DateTime) => {
+      const today = DateTime.now();
       return date < today;
     };
 

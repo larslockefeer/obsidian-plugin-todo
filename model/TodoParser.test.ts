@@ -38,7 +38,9 @@ test('parsing an outstanding todo with a specific action date', async () => {
   expect(todo.sourceFilePath).toEqual('/');
   expect(todo.status).toEqual(TodoItemStatus.Todo);
   expect(todo.description).toEqual('This is something that needs doing #2021-02-16');
-  expect(todo.actionDate).toEqual(new Date('2021-02-16'));
+  expect(todo.actionDate.day).toEqual(16);
+  expect(todo.actionDate.month).toEqual(2);
+  expect(todo.actionDate.year).toEqual(2021);
   expect(todo.isSomedayMaybeNote).toEqual(false);
 });
 

@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon';
+
 export enum TodoItemStatus {
   Todo,
   Done,
@@ -22,7 +24,7 @@ export class TodoItem {
 
   public status: TodoItemStatus;
   public description: string;
-  public actionDate?: Date;
+  public actionDate?: DateTime;
   public isSomedayMaybeNote: boolean;
 
   constructor(
@@ -32,7 +34,7 @@ export class TodoItem {
     sourceFilePath: string,
     startIndex: number,
     length: number,
-    actionDate?: Date,
+    actionDate?: DateTime,
   ) {
     this.status = status;
     this.description = description;
