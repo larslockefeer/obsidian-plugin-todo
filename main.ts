@@ -3,17 +3,22 @@ import { VIEW_TYPE_TODO } from './constants';
 import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
+import { TodoPluginSettings, DEFAULT_SETTINGS } from './model/TodoPluginSettings';
+import { SettingsTab } from './ui/SettingsTab';
 
 export default class TodoPlugin extends Plugin {
   private todoIndex: TodoIndex;
   private view: TodoItemView;
+  private settings: TodoPluginSettings;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this));
+    this.todoIndex = new TodoIndex(this.app.vault, DEFAULT_SETTINGS, this.tick.bind(this));
   }
 
   async onload(): Promise<void> {
+    await this.loadSettings();
+
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
@@ -32,11 +37,13 @@ export default class TodoPlugin extends Plugin {
 
     if (this.app.workspace.layoutReady) {
       this.initLeaf();
-      await this.prepareIndex();
+      await this.triggerIndex();
     } else {
       this.registerEvent(this.app.workspace.on('layout-ready', this.initLeaf.bind(this)));
-      this.registerEvent(this.app.workspace.on('layout-ready', async () => await this.prepareIndex()));
+      this.registerEvent(this.app.workspace.on('layout-ready', async () => await this.triggerIndex()));
     }
+
+    this.addSettingTab(new SettingsTab(this.app, this));
   }
 
   onunload(): void {
@@ -52,7 +59,21 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex(): Promise<void> {
+  private async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  getSettings(): TodoPluginSettings {
+    return this.settings;
+  }
+
+  async updateSettings(settings: TodoPluginSettings): Promise<void> {
+    this.settings = settings;
+    await this.saveData(this.settings);
+    this.todoIndex.setSettings(settings);
+  }
+
+  private async triggerIndex(): Promise<void> {
     await this.todoIndex.initialize();
   }
 
