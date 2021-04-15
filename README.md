@@ -17,6 +17,8 @@ Text-based GTD in Obsidian.
 
 **Date format**: Customise the date format. Uses luxon under the hood. See [their documentation](https://moment.github.io/luxon/#/formatting?id=table-of-tokens) for supported tokens. Defaults to `yyyy-MM-dd`.
 
+**Open files in a new leaf**: When enabled, files opened from within the plugin will open in a new leaf rather than replacing the currently opened file.
+
 ### Screenshots
 ![](./assets/today.png)
 ![](./assets/scheduled.png)
