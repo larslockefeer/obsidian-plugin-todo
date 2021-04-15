@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-sample-plugin",
-  "version": "0.9.7",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "obsidian-plugin-todo",
+  "version": "0.1.0",
+  "description": "Text-based GTD in Obsidian.",
   "main": "main.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
@@ -10,8 +10,8 @@
     "test": "jest"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "author": "https://github.com/larslockefeer",
+  "license": "GNU GPLv3",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
