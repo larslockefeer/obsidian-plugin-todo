@@ -116,10 +116,11 @@ export class TodoItemView extends ItemView {
             });
           });
           el.createDiv('todo-item-view-item-description', (el) => {
+						el.setAttribute('aria-label', todo.sourceFilePath);
             MarkdownRenderer.renderMarkdown(todo.description, el, todo.sourceFilePath, this);
           });
           el.createDiv('todo-item-view-item-link', (el) => {
-            el.appendChild(RenderIcon(Icon.Reveal, 'Open file'));
+            el.appendChild(RenderIcon(Icon.Reveal, 'Open ' + todo.sourceFilePath));
             el.onClickEvent(() => {
               this.openFile(todo);
             });
