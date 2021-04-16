@@ -2,7 +2,7 @@ import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 
 export class TodoParser {
   async parseTasks(filePath: string, fileContents: string): Promise<TodoItem[]> {
-    const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
+		const pattern = /^([-*]) \[([ x])\] (.*)$/gm;
     return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
   }
 
