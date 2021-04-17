@@ -8,6 +8,13 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.js]
+ij_javascript_spaces_within_imports = true
+ij_javascript_space_before_function_left_parenth = false
+ij_javascript_spaces_within_object_literal_braces = true
+
+
 [{*.ats, *.ts}]
 ij_typescript_spaces_within_imports = true
 ij_typescript_space_before_function_left_parenth = false
+ij_typescript_spaces_within_object_literal_braces = true
