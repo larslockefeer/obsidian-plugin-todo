@@ -19,6 +19,14 @@ export default class TodoPlugin extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new TodoPluginSettingTab(this.app, this));
 
+    this.addCommand({
+      id: 'refresh-all',
+      name: 'Refresh All',
+      callback: () => {
+        this.prepareIndex(true);
+      },
+    });
+
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
@@ -57,8 +65,8 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex(): Promise<void> {
-    await this.todoIndex.initialize();
+  async prepareIndex(notify: boolean = false): Promise<void> {
+    await this.todoIndex.initialize(notify);
   }
 
   tick(todos: TodoItem[]): void {

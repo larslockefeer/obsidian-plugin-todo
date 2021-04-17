@@ -1,4 +1,4 @@
-import { TAbstractFile, TFile, Vault } from 'obsidian';
+import { Notice, TAbstractFile, TFile, Vault } from 'obsidian';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 import { TodoParser } from '../model/TodoParser';
 
@@ -13,7 +13,7 @@ export class TodoIndex {
     this.listeners = [listener];
   }
 
-  async initialize(): Promise<void> {
+  async initialize(notify: boolean = false): Promise<void> {
     // TODO: persist index & last sync timestamp; only parse files that changed since then.
     const todoMap = new Map<string, TodoItem[]>();
     let numberOfTodos = 0;
@@ -29,11 +29,11 @@ export class TodoIndex {
     }
 
     const totalTimeMs = new Date().getTime() - timeStart;
-    console.log(
-      `[obsidian-plugin-todo] Parsed ${numberOfTodos} TODOs from ${markdownFiles.length} markdown files in (${
-        totalTimeMs / 1000.0
-      }s)`,
-    );
+    const msg = `Parsed ${numberOfTodos} TODO${numberOfTodos > 1 ? 's' : ''} from ${markdownFiles.length} note${markdownFiles.length > 1 ? 's' : ''}`;
+    console.log('[obsidian-plugin-todo] ' + msg + ` in (${totalTimeMs / 1000.0}s)`);
+    if (notify) {
+      new Notice(msg);
+    }
     this.todos = todoMap;
     this.registerEventHandlers();
     this.invokeListeners();
