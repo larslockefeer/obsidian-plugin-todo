@@ -3,17 +3,46 @@ import { VIEW_TYPE_TODO } from './constants';
 import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
+import { DEFAULT_SETTINGS, TodoPluginSettings, TodoPluginSettingTab } from './settings';
 
 export default class TodoPlugin extends Plugin {
+  settings: TodoPluginSettings;
   private todoIndex: TodoIndex;
   private view: TodoItemView;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this));
+    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this), this);
   }
 
   async onload(): Promise<void> {
+    await this.loadSettings();
+    this.addSettingTab(new TodoPluginSettingTab(this.app, this));
+
+    this.addCommand({
+      id: 'refresh-all',
+      name: 'Refresh All',
+      callback: () => {
+        this.prepareIndex(true);
+      },
+    });
+
+    this.addCommand({
+      id: 'ignore-note',
+      name: 'Ignore this note',
+      checkCallback: (checking: boolean) => {
+        const leaf = this.app.workspace.activeLeaf;
+        if (leaf) {
+          if (!checking) {
+            this.settings.ignoredNotes[this.app.workspace.getActiveFile().path.trim()] = null;
+            this.saveSettings();
+          }
+          return true;
+        }
+        return false;
+      },
+    });
+
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
@@ -52,8 +81,8 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex(): Promise<void> {
-    await this.todoIndex.initialize();
+  async prepareIndex(notify = false): Promise<void> {
+    await this.todoIndex.initialize(notify);
   }
 
   tick(todos: TodoItem[]): void {
@@ -63,5 +92,14 @@ export default class TodoPlugin extends Plugin {
         todos: todos,
       };
     });
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+    await this.prepareIndex();
   }
 }
