@@ -2,7 +2,7 @@
   "name": "obsidian-plugin-todo",
   "version": "0.1.0",
   "description": "Text-based GTD in Obsidian.",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "dev": "rollup --config rollup.config.js -w",
