@@ -85,5 +85,6 @@ export default class TodoPlugin extends Plugin {
 
   async saveSettings () {
     await this.saveData(this.settings);
+    await this.prepareIndex();
   }
 }
