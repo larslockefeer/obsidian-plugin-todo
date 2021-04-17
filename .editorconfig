@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 120
+trim_trailing_whitespace = true
+
+[*.js]
+ij_javascript_enforce_trailing_comma = keep
+ij_javascript_force_quote_style = true
+ij_javascript_space_before_function_left_parenth = false
+ij_javascript_spaces_within_imports = true
+ij_javascript_spaces_within_object_literal_braces = true
+ij_javascript_use_double_quotes = false
+ij_javascript_use_semicolon_after_statement = true
+
+[*.ts]
+ij_typescript_enforce_trailing_comma = keep
+ij_typescript_force_quote_style = true
+ij_typescript_space_before_function_left_parenth = false
+ij_typescript_spaces_within_imports = true
+ij_typescript_spaces_within_object_literal_braces = true
+ij_typescript_use_double_quotes = false
+ij_typescript_use_semicolon_after_statement = true
