@@ -11,12 +11,12 @@ export default class TodoPlugin extends Plugin {
   private todoIndex: TodoIndex;
   private view: TodoItemView;
 
-  constructor (app: App, manifest: PluginManifest) {
+  constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
     this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this), this);
   }
 
-  async onload (): Promise<void> {
+  async onload(): Promise<void> {
     await this.loadSettings();
     this.addSettingTab(new TodoPluginSettingTab(this.app, this));
 
@@ -53,11 +53,11 @@ export default class TodoPlugin extends Plugin {
     }
   }
 
-  onunload (): void {
+  onunload(): void {
     this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).forEach((leaf) => leaf.detach());
   }
 
-  initLeaf (): void {
+  initLeaf(): void {
     if (this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).length) {
       return;
     }
@@ -66,11 +66,11 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex (): Promise<void> {
+  async prepareIndex(): Promise<void> {
     await this.todoIndex.initialize();
   }
 
-  tick (todos: TodoItem[]): void {
+  tick(todos: TodoItem[]): void {
     this.view.setProps((currentProps: TodoItemViewProps) => {
       return {
         ...currentProps,
@@ -79,11 +79,11 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async loadSettings () {
+  async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
-  async saveSettings () {
+  async saveSettings() {
     await this.saveData(this.settings);
     await this.prepareIndex();
   }

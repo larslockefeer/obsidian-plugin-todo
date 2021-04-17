@@ -13,13 +13,13 @@ export class TodoPluginSettingTab extends PluginSettingTab {
   plugin: TodoPlugin;
   app: App;
 
-  constructor (app: App, plugin: TodoPlugin) {
+  constructor(app: App, plugin: TodoPlugin) {
     super(app, plugin);
     this.plugin = plugin;
     this.app = app;
   }
 
-  display (): void {
+  display(): void {
     let {containerEl} = this;
 
     containerEl.empty();
