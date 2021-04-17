@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import type TodoPlugin from "./main";
+import type TodoPlugin from './main';
 
 export const DEFAULT_SETTINGS: TodoPluginSettings = {
   onlyRootTasks: false,
@@ -20,14 +20,15 @@ export class TodoPluginSettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    let {containerEl} = this;
+    const { containerEl } = this;
 
     containerEl.empty();
 
-    containerEl.createEl('h2', {text: 'Obsidian TODO | Text-based GTD'});
+    containerEl.createEl('h2', { text: 'Obsidian TODO | Text-based GTD' });
     containerEl.createEl('p', {
-      text: 'Collects all outstanding TODOs from your vault and presents them in lists Today, Scheduled, Inbox and Someday/Maybe.',
+      text:
+        'Collects all outstanding TODOs from your vault and presents them in lists Today, Scheduled, Inbox and Someday/Maybe.',
     });
-    containerEl.createEl('h3', {text: 'General Settings'});
+    containerEl.createEl('h3', { text: 'General Settings' });
   }
 }

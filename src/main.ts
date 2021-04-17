@@ -3,7 +3,7 @@ import { VIEW_TYPE_TODO } from './constants';
 import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
-import { DEFAULT_SETTINGS, TodoPluginSettings, TodoPluginSettingTab } from './settings'
+import { DEFAULT_SETTINGS, TodoPluginSettings, TodoPluginSettingTab } from './settings';
 
 export default class TodoPlugin extends Plugin {
   settings: TodoPluginSettings;
@@ -65,7 +65,7 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex(notify: boolean = false): Promise<void> {
+  async prepareIndex(notify = false): Promise<void> {
     await this.todoIndex.initialize(notify);
   }
 

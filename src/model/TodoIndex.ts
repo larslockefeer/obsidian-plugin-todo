@@ -13,7 +13,7 @@ export class TodoIndex {
     this.listeners = [listener];
   }
 
-  async initialize(notify: boolean = false): Promise<void> {
+  async initialize(notify = false): Promise<void> {
     // TODO: persist index & last sync timestamp; only parse files that changed since then.
     const todoMap = new Map<string, TodoItem[]>();
     let numberOfTodos = 0;
@@ -29,7 +29,9 @@ export class TodoIndex {
     }
 
     const totalTimeMs = new Date().getTime() - timeStart;
-    const msg = `Parsed ${numberOfTodos} TODO${numberOfTodos > 1 ? 's' : ''} from ${markdownFiles.length} note${markdownFiles.length > 1 ? 's' : ''}`;
+    const msg = `Parsed ${numberOfTodos} TODO${numberOfTodos > 1 ? 's' : ''} from ${markdownFiles.length} note${
+      markdownFiles.length > 1 ? 's' : ''
+    }`;
     console.log('[obsidian-plugin-todo] ' + msg + ` in (${totalTimeMs / 1000.0}s)`);
     if (notify) {
       new Notice(msg);
