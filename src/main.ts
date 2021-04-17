@@ -24,7 +24,7 @@ export default class TodoPlugin extends Plugin {
       id: 'refresh-all',
       name: 'Refresh All',
       callback: () => {
-        this.prepareIndex();
+        this.prepareIndex(true);
       },
     });
 
@@ -66,8 +66,8 @@ export default class TodoPlugin extends Plugin {
     });
   }
 
-  async prepareIndex(): Promise<void> {
-    await this.todoIndex.initialize();
+  async prepareIndex(notify: boolean = false): Promise<void> {
+    await this.todoIndex.initialize(notify);
   }
 
   tick(todos: TodoItem[]): void {
