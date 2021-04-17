@@ -1,12 +1,22 @@
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
+import TodoPlugin from "../main";
 
 export class TodoParser {
-  async parseTasks(filePath: string, fileContents: string): Promise<TodoItem[]> {
-    const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
+  private plugin: TodoPlugin;
+
+  constructor (plugin: TodoPlugin) {
+    this.plugin = plugin;
+  }
+
+  async parseTasks (filePath: string, fileContents: string): Promise<TodoItem[]> {
+    let pattern = /([-*]) \[([ x])\] (.*)/gm;
+    if (this.plugin.settings.onlyRootTasks) {
+      pattern = /^([-*]) \[([ x])\] (.*)$/gm;
+    }
     return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
   }
 
-  private parseTask(filePath: string, entry: RegExpMatchArray): TodoItem {
+  private parseTask (filePath: string, entry: RegExpMatchArray): TodoItem {
     const todoItemOffset = 2; // Strip off `-|* `
     const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
     const description = entry[3];

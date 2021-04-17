@@ -1,7 +1,7 @@
-# OS X
+# macOS
 .DS_Store
 
-# Intellij
+# IntelliJ
 *.iml
 .idea
 
@@ -9,7 +9,11 @@
 node_modules
 package-lock.json
 yarn-error.log
+yarn.lock
 
 # build
 main.js
 *.js.map
+
+# my settings
+data.json
