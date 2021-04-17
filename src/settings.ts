@@ -40,7 +40,7 @@ export class TodoPluginSettingTab extends PluginSettingTab {
       text: 'You can ignore notes from this plugin by using the “Ignore this note” command',
     });
 
-    for (let key in this.plugin.settings.ignoredNotes) {
+    for (const key in this.plugin.settings.ignoredNotes) {
       const ignoredFilesSettingsObj = new Setting(containerEl).setDesc(key);
 
       ignoredFilesSettingsObj.addButton((button) => {

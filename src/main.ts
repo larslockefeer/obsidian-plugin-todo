@@ -12,7 +12,7 @@ export default class TodoPlugin extends Plugin {
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this));
+    this.todoIndex = new TodoIndex(this.app.vault, this.tick.bind(this), this);
   }
 
   async onload(): Promise<void> {
@@ -31,7 +31,7 @@ export default class TodoPlugin extends Plugin {
       id: 'ignore-note',
       name: 'Ignore this note',
       checkCallback: (checking: boolean) => {
-        let leaf = this.app.workspace.activeLeaf;
+        const leaf = this.app.workspace.activeLeaf;
         if (leaf) {
           if (!checking) {
             this.settings.ignoredNotes[this.app.workspace.getActiveFile().path.trim()] = null;

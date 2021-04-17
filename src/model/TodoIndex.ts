@@ -1,26 +1,35 @@
 import { Notice, TAbstractFile, TFile, Vault } from 'obsidian';
-import { TodoItem, TodoItemStatus } from '../model/TodoItem';
-import { TodoParser } from '../model/TodoParser';
+import { TodoItem, TodoItemStatus } from './TodoItem';
+import { TodoParser } from './TodoParser';
+import type TodoPlugin from '../main';
 
 export class TodoIndex {
   private vault: Vault;
   private todos: Map<string, TodoItem[]>;
   private listeners: ((todos: TodoItem[]) => void)[];
+  plugin: TodoPlugin;
 
-  constructor(vault: Vault, listener: (todos: TodoItem[]) => void) {
+  constructor(vault: Vault, listener: (todos: TodoItem[]) => void, plugin: TodoPlugin) {
     this.vault = vault;
     this.todos = new Map<string, TodoItem[]>();
     this.listeners = [listener];
+    this.plugin = plugin;
   }
 
   async initialize(notify = false): Promise<void> {
     // TODO: persist index & last sync timestamp; only parse files that changed since then.
     const todoMap = new Map<string, TodoItem[]>();
     let numberOfTodos = 0;
+    let ignoredNotes = 0;
     const timeStart = new Date().getTime();
 
     const markdownFiles = this.vault.getMarkdownFiles();
     for (const file of markdownFiles) {
+      if (file.path in this.plugin.settings.ignoredNotes) {
+        console.log(`[obsidian-plugin-todo] ignoring ${file.path}`);
+        ignoredNotes++;
+        continue;
+      }
       const todos = await this.parseTodosInFile(file);
       numberOfTodos += todos.length;
       if (todos.length > 0) {
@@ -29,9 +38,9 @@ export class TodoIndex {
     }
 
     const totalTimeMs = new Date().getTime() - timeStart;
-    const msg = `Parsed ${numberOfTodos} TODO${numberOfTodos > 1 ? 's' : ''} from ${markdownFiles.length} note${
-      markdownFiles.length > 1 ? 's' : ''
-    }`;
+    const msg = `Parsed ${numberOfTodos} TODO${numberOfTodos > 1 ? 's' : ''} from ${
+      markdownFiles.length - ignoredNotes
+    } note${markdownFiles.length > 1 ? 's' : ''}`;
     console.log('[obsidian-plugin-todo] ' + msg + ` in (${totalTimeMs / 1000.0}s)`);
     if (notify) {
       new Notice(msg);
