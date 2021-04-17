@@ -27,6 +27,22 @@ export default class TodoPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: 'ignore-note',
+      name: 'Ignore this note',
+      checkCallback: (checking: boolean) => {
+        let leaf = this.app.workspace.activeLeaf;
+        if (leaf) {
+          if (!checking) {
+            this.settings.ignoredNotes[this.app.workspace.getActiveFile().path.trim()] = null;
+            this.saveSettings();
+          }
+          return true;
+        }
+        return false;
+      },
+    });
+
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
