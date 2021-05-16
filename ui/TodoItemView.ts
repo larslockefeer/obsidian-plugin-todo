@@ -132,14 +132,14 @@ export class TodoItemView extends ItemView {
     const isToday = (date: Date) => {
       const today = new Date();
       return (
-        date.getDate() == today.getDate() &&
-        date.getMonth() == today.getMonth() &&
-        date.getFullYear() == today.getFullYear()
+        date.getUTCDate() == today.getDate() &&
+        date.getUTCMonth() == today.getMonth() &&
+        date.getUTCFullYear() == today.getFullYear()
       );
     };
 
     const isBeforeToday = (date: Date) => {
-      const today = new Date();
+      const today = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
       return date < today;
     };
 
