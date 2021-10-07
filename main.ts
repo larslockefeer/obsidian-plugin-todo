@@ -35,15 +35,12 @@ export default class TodoPlugin extends Plugin {
       return this.view;
     });
 
-    if (this.app.workspace.layoutReady) {
+    this.app.workspace.onLayoutReady(() => {
       this.initLeaf();
-      await this.triggerIndex();
-    } else {
-      this.registerEvent(this.app.workspace.on('layout-ready', this.initLeaf.bind(this)));
-      this.registerEvent(this.app.workspace.on('layout-ready', async () => await this.triggerIndex()));
-    }
 
     this.addSettingTab(new SettingsTab(this.app, this));
+      this.triggerIndex();
+    })
   }
 
   onunload(): void {
