@@ -1,7 +1,9 @@
 import { TodoItemStatus } from './TodoItem';
 import { TodoParser } from './TodoParser';
+import { DateParser } from '../util/DateParser';
 
-const todoParser = new TodoParser();
+const dateParser = new DateParser(DateParser.DateToken, "yyyy-MM-dd");
+const todoParser = new TodoParser(dateParser);
 
 test('parsing an outstanding todo', async () => {
   const contents = `- [ ] This is something that needs doing`;
