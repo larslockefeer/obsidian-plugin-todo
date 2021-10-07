@@ -20,12 +20,16 @@ export class DateParser {
     this.regexp = new RegExp(fullPattern);
   }
 
-  public extractDate(source: string): DateTime | undefined {
+  public parseDate(source: string): DateTime | undefined {
     const matches = source.match(this.regexp);
     if (!matches) {
       return undefined;
     }
     return DateTime.fromFormat(matches[1], this.dateFormat);
+  }
+
+  public removeDate(source: string): string {
+    return source.replace(this.regexp, "");
   }
 }
 

@@ -18,12 +18,13 @@ export class TodoParser {
     const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
     const description = entry[3];
 
-    const actionDate = this.dateParser.extractDate(description);
+    const actionDate = this.dateParser.parseDate(description);
+    const descriptionWithoutDate = this.dateParser.removeDate(description);
     const somedayPattern = /#(someday)/g;
 
     return new TodoItem(
       status,
-      description,
+      descriptionWithoutDate,
       description.match(somedayPattern) != null,
       filePath,
       (entry.index ?? 0) + todoItemOffset,
