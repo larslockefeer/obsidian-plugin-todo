@@ -17,7 +17,8 @@ export default class TodoPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    await this.loadSettings();
+    this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+    this.addSettingTab(new SettingsTab(this.app, this));
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
@@ -37,8 +38,6 @@ export default class TodoPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(() => {
       this.initLeaf();
-
-    this.addSettingTab(new SettingsTab(this.app, this));
       this.triggerIndex();
     })
   }
@@ -54,10 +53,6 @@ export default class TodoPlugin extends Plugin {
     this.app.workspace.getRightLeaf(false).setViewState({
       type: VIEW_TYPE_TODO,
     });
-  }
-
-  private async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
   getSettings(): TodoPluginSettings {
