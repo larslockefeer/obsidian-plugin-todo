@@ -1,6 +1,13 @@
+import { DateParser } from '../util/DateParser';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 
 export class TodoParser {
+  private dateParser: DateParser;
+
+  constructor(dateParser: DateParser) {
+    this.dateParser = dateParser;
+  }
+
   async parseTasks(filePath: string, fileContents: string): Promise<TodoItem[]> {
     const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
     return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
@@ -11,14 +18,13 @@ export class TodoParser {
     const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
     const description = entry[3];
 
-    const datePattern = /#(\d{4}-\d{2}-\d{2})/g;
+    const actionDate = this.dateParser.parseDate(description);
+    const descriptionWithoutDate = this.dateParser.removeDate(description);
     const somedayPattern = /#(someday)/g;
-    const dateMatches = description.match(datePattern);
-    const actionDate = dateMatches != null ? new Date(dateMatches[0]?.substring(1)) : undefined;
 
     return new TodoItem(
       status,
-      description,
+      descriptionWithoutDate,
       description.match(somedayPattern) != null,
       filePath,
       (entry.index ?? 0) + todoItemOffset,

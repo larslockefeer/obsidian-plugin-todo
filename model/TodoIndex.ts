@@ -1,16 +1,20 @@
 import { TAbstractFile, TFile, Vault } from 'obsidian';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
+import { TodoPluginSettings } from '../model/TodoPluginSettings';
+import { DateParser } from '../util/DateParser';
 import { TodoParser } from '../model/TodoParser';
 
 export class TodoIndex {
   private vault: Vault;
   private todos: Map<string, TodoItem[]>;
   private listeners: ((todos: TodoItem[]) => void)[];
+  private settings: TodoPluginSettings;
 
-  constructor(vault: Vault, listener: (todos: TodoItem[]) => void) {
+  constructor(vault: Vault, settings: TodoPluginSettings, listener: (todos: TodoItem[]) => void) {
     this.vault = vault;
     this.todos = new Map<string, TodoItem[]>();
     this.listeners = [listener];
+    this.settings = settings;
   }
 
   async initialize(): Promise<void> {
@@ -49,6 +53,17 @@ export class TodoIndex {
     });
   }
 
+  setSettings(settings: TodoPluginSettings): void {
+    const oldSettings = this.settings;
+    this.settings = settings;
+
+    const reIndexRequired =
+      oldSettings.dateFormat !== settings.dateFormat || oldSettings.dateTagFormat !== settings.dateTagFormat;
+    if (reIndexRequired) {
+      this.initialize();
+    }
+  }
+
   private indexAbstractFile(file: TAbstractFile) {
     if (!(file instanceof TFile)) {
       return;
@@ -72,7 +87,8 @@ export class TodoIndex {
 
   private async parseTodosInFile(file: TFile): Promise<TodoItem[]> {
     // TODO: Does it make sense to index completed TODOs at all?
-    const todoParser = new TodoParser();
+    const dateParser = new DateParser(this.settings.dateTagFormat, this.settings.dateFormat);
+    const todoParser = new TodoParser(dateParser);
     const fileContents = await this.vault.cachedRead(file);
     return todoParser
       .parseTasks(file.path, fileContents)
