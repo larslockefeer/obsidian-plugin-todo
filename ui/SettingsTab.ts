@@ -66,6 +66,18 @@ export class SettingsTab extends PluginSettingTab {
           this.plugin.updateSettings({ ...currentSettings, dateFormat });
         }),
       );
+
+    new Setting(containerEl)
+      .setName('Open files in a new leaf')
+      .setDesc(
+        'If enabled, when opening the file containing a TODO that file will open in a new leaf. If disabled, it will replace the file that you currently have open.',
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(currentSettings.openFilesInNewLeaf);
+        toggle.onChange(async (openFilesInNewLeaf) => {
+          this.plugin.updateSettings({ ...currentSettings, openFilesInNewLeaf });
+        });
+      });
   }
 
   private dateTagFormatDescription(error?: string): DocumentFragment {
