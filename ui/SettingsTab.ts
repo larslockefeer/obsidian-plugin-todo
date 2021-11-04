@@ -88,7 +88,7 @@ export class SettingsTab extends PluginSettingTab {
     el.appendChild(document.createElement('br'));
 
     const a = document.createElement('a');
-    a.href = 'https://moment.github.io/luxon/docs/manual/parsing.html#table-of-tokens';
+    a.href = 'https://moment.github.io/luxon/#/formatting?id=table-of-tokens';
     a.text = 'See the documentation for supported tokens.';
     a.target = '_blank';
     el.appendChild(a);
