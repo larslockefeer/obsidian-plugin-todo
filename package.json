@@ -1,17 +1,22 @@
 {
-  "name": "obsidian-sample-plugin",
-  "version": "0.9.7",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "obsidian-plugin-todo",
+  "version": "0.2.0",
+  "description": "Text-based GTD in Obsidian. Collects all outstanding TODOs from your vault and presents them in lists Today, Scheduled, Inbox and Someday/Maybe.",
   "main": "main.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "dev": "rollup --config rollup.config.js -w",
     "lint": "eslint '**/*.{js,ts}' --fix",
     "lint-on-ci": "eslint '**/*.{js,ts}'",
+    "release": "gh release create '${github.event.inputs.version_number}' main.js styles.css manifest.json --title '${github.event.inputs.version_number}'",
     "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "Lars Lockefeer",
+  "bugs": {
+    "url": "https://github.com/larslockefeer/obsidian-plugin-todo/issues"
+  },
+  "homepage": "https://github.com/larslockefeer/obsidian-plugin-todo#obsidian-todo-plugin",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.1.0",
