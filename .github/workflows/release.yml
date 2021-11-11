@@ -1,0 +1,24 @@
+name: Cut release
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'Version Number'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn install
+      - name: Run the tests
+        run: yarn test
+      - name: Build the release artifacts
+        run: yarn build
+      - name: Create the release
+        run: gh release create $VERSION_NUMBER main.js styles.css manifest.json --title $VERSION_NUMBER --draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
