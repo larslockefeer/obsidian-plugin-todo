@@ -15,6 +15,15 @@ jobs:
         run: yarn install
       - name: Run the tests
         run: yarn test
+      - name: Update manifest
+        run: |
+          git config --global user.email "lars.lockefeer@gmail.com"
+          git config --global user.name "Lars Lockefeer"
+          tmp=$(mktemp) && jq --arg VERSION_NUMBER "$VERSION_NUMBER" '.version = $VERSION_NUMBER' manifest.json > "$tmp" && mv "$tmp" manifest.json
+          git add manifest.json && git commit -m "Bump version to $VERSION_NUMBER"
+          git push
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
       - name: Build the release artifacts
         run: yarn build
       - name: Create the release

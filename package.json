@@ -16,7 +16,7 @@
     "url": "https://github.com/larslockefeer/obsidian-plugin-todo/issues"
   },
   "homepage": "https://github.com/larslockefeer/obsidian-plugin-todo#obsidian-todo-plugin",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
