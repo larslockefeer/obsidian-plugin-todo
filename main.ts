@@ -5,6 +5,7 @@ import { TodoItem, TodoItemStatus } from './model/TodoItem';
 import { TodoIndex } from './model/TodoIndex';
 import { TodoPluginSettings, DEFAULT_SETTINGS } from './model/TodoPluginSettings';
 import { SettingsTab } from './ui/SettingsTab';
+import { DateFormatter } from 'util/DateFormatter';
 
 export default class TodoPlugin extends Plugin {
   private todoIndex: TodoIndex;
@@ -23,6 +24,7 @@ export default class TodoPlugin extends Plugin {
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
+        dateFormatter: new DateFormatter(this.settings.dateFormat),
         todos: todos,
         openFile: (filePath: string) => {
           const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
@@ -65,6 +67,12 @@ export default class TodoPlugin extends Plugin {
 
   async updateSettings(settings: TodoPluginSettings): Promise<void> {
     this.settings = settings;
+    this.view.setProps((currentProps: TodoItemViewProps) => {
+      return {
+        ...currentProps,
+        dateFormatter: new DateFormatter(this.settings.dateFormat),
+      };
+    });
     await this.saveData(this.settings);
     this.todoIndex.setSettings(settings);
   }
