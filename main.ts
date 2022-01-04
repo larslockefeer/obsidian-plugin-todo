@@ -6,8 +6,10 @@ import { TodoIndex } from './model/TodoIndex';
 import { TodoPluginSettings, DEFAULT_SETTINGS } from './model/TodoPluginSettings';
 import { SettingsTab } from './ui/SettingsTab';
 import { DateFormatter } from 'util/DateFormatter';
+import { DateTime } from 'luxon';
 
 export default class TodoPlugin extends Plugin {
+  private dateFormatter: DateFormatter;
   private todoIndex: TodoIndex;
   private view: TodoItemView;
   private settings: TodoPluginSettings;
@@ -19,13 +21,16 @@ export default class TodoPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
       const props = {
-        dateFormatter: new DateFormatter(this.settings.dateFormat),
         todos: todos,
+        formatDate: (date: DateTime) => {
+          return this.dateFormatter.formatDate(date);
+        },
         openFile: (filePath: string) => {
           const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
           if (this.settings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
@@ -67,12 +72,7 @@ export default class TodoPlugin extends Plugin {
 
   async updateSettings(settings: TodoPluginSettings): Promise<void> {
     this.settings = settings;
-    this.view.setProps((currentProps: TodoItemViewProps) => {
-      return {
-        ...currentProps,
-        dateFormatter: new DateFormatter(this.settings.dateFormat),
-      };
-    });
+    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
     await this.saveData(this.settings);
     this.todoIndex.setSettings(settings);
   }

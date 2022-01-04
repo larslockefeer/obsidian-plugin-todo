@@ -3,7 +3,6 @@ import { ItemView, MarkdownRenderer, WorkspaceLeaf } from 'obsidian';
 import { VIEW_TYPE_TODO } from '../constants';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 import { RenderIcon, Icon } from '../ui/icons';
-import { DateFormatter } from '../util/DateFormatter';
 
 enum TodoItemViewPane {
   Today,
@@ -12,8 +11,8 @@ enum TodoItemViewPane {
   Someday,
 }
 export interface TodoItemViewProps {
-  dateFormatter: DateFormatter;
   todos: TodoItem[];
+  formatDate: (date: DateTime) => string;
   openFile: (filePath: string) => void;
   toggleTodo: (todo: TodoItem, newStatus: TodoItemStatus) => void;
 }
@@ -124,8 +123,10 @@ export class TodoItemView extends ItemView {
               el.createSpan('due-date', (el) => {
                 if (todo.actionDate.startOf('day') < DateTime.now().startOf('day')) {
                   el.classList.add('overdue');
+                } else if (todo.actionDate.startOf('day') > DateTime.now().startOf('day')) {
+                  el.classList.add('future-due');
                 }
-                el.setText(this.props.dateFormatter.formatDate(todo.actionDate));
+                el.setText(this.props.formatDate(todo.actionDate));
               });
             }
           });
