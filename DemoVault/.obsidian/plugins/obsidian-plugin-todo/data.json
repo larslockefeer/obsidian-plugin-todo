@@ -1,0 +1,5 @@
+{
+  "dateFormat": "yyyy-MM-dd",
+  "dateTagFormat": "[due:: %date%]",
+  "openFilesInNewLeaf": true
+}

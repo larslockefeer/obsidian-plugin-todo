@@ -13,3 +13,7 @@ yarn-error.log
 # build
 main.js
 *.js.map
+
+# Demo vault
+DemoVault/.obsidian/plugins/obsidian-plugin-todo
+DemoVault/.obsidian/workspace
