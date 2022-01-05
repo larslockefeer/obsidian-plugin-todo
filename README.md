@@ -11,6 +11,7 @@ Text-based GTD in Obsidian.
 - Mark a TODO as Someday/Maybe by adding a tag #someday
 - Complete TODOs from the list view
 - Quickly jump to the file in which a TODO is found from the list view
+- Integrates with the Daily Notes plugin: TODOs without a due date will inherit the date of the daily note as due date
 
 ### Settings
 **Date tag format**: Customise the format you use to add due dates to your tasks. Defaults to `#%date%`.
@@ -31,4 +32,3 @@ Text-based GTD in Obsidian.
 - [ ] Persist cache, on reopening only reindex files changed since Obsidian was closed
 - [ ] Filter items list view by tags / freeform search
 - [ ] Improve UI and themeability
-- [ ] Integrate with daily notes plugin to ensure unscheduled TODOs in a daily note are listed in "Today"

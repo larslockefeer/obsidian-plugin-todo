@@ -1,6 +1,9 @@
 import { TodoItemStatus } from './TodoItem';
 import { TodoParser } from './TodoParser';
 import { DateParser } from '../util/DateParser';
+import { DateTime } from 'luxon';
+
+jest.mock('../util/DailyNoteParser');
 
 const dateParser = new DateParser(`#${DateParser.DateToken}`, 'yyyy-MM-dd');
 const todoParser = new TodoParser(dateParser);
@@ -57,4 +60,13 @@ test('parsing an outstanding someday/maybe todo', async () => {
   expect(todo.description).toEqual('This is something that needs doing #someday');
   expect(todo.actionDate).toBeUndefined();
   expect(todo.isSomedayMaybeNote).toEqual(true);
+});
+
+test('parsing a todo in a daily notes file', async () => {
+  const contents = `- [ ] This is something that needs doing today`;
+  const todos = await todoParser.parseTasks('/Daily Notes/today.md', contents);
+  const todo = todos[0];
+  expect(todo.actionDate.day).toEqual(DateTime.now().day);
+  expect(todo.actionDate.month).toEqual(DateTime.now().month);
+  expect(todo.actionDate.year).toEqual(DateTime.now().year);
 });
