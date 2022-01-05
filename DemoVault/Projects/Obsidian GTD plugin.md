@@ -1,9 +1,11 @@
 # Obsidian GTD plugin
 ## Roadmap
-- [ ] Integrate with Daily Notes plugin, assume tasks in a daily note without a due date are scheduled for that day
 - [ ] Add setting to prevent files at specific paths from being indexed
 - [ ] Allow filtering in the list views via a freeform query
 - [ ] Group tasks in the list views by file
+
+## Version 0.2.3
+- [x] Integrate with Daily Notes plugin, assume tasks in a daily note without a due date are scheduled for that day
 
 ## Version 0.2.2
 - [x] Add Demo Vault, showing off all features

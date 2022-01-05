@@ -1,5 +1,7 @@
 import { DateParser } from '../util/DateParser';
 import { TodoItem, TodoItemStatus } from '../model/TodoItem';
+import { DateTime } from 'luxon';
+import { extractDueDateFromDailyNotesFile } from '../util/DailyNoteParser';
 
 export class TodoParser {
   private dateParser: DateParser;
@@ -18,7 +20,7 @@ export class TodoParser {
     const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
     const description = entry[3];
 
-    const actionDate = this.dateParser.parseDate(description);
+    const actionDate = this.parseDueDate(description, filePath);
     const descriptionWithoutDate = this.dateParser.removeDate(description);
     const somedayPattern = /#(someday)/g;
 
@@ -31,5 +33,13 @@ export class TodoParser {
       entry[0].length - todoItemOffset,
       actionDate,
     );
+  }
+
+  private parseDueDate(description: string, filePath: string): DateTime | undefined {
+    const taggedDueDate = this.dateParser.parseDate(description);
+    if (taggedDueDate) {
+      return taggedDueDate;
+    }
+    return extractDueDateFromDailyNotesFile(filePath);
   }
 }
