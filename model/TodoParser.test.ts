@@ -70,3 +70,29 @@ test('parsing a todo in a daily notes file', async () => {
   expect(todo.actionDate.month).toEqual(DateTime.now().month);
   expect(todo.actionDate.year).toEqual(DateTime.now().year);
 });
+
+test('parsing a todo in a daily notes file with a due date', async () => {
+  const contents = `- [ ] This is something that needs doing #2022-04-01`;
+  const todos = await todoParser.parseTasks('/Daily Notes/today.md', contents);
+  const todo = todos[0];
+  expect(todo.actionDate.day).toEqual(1);
+  expect(todo.actionDate.month).toEqual(4);
+  expect(todo.actionDate.year).toEqual(2022);
+});
+
+test('parsing a todo in a daily notes file tagged as someday/maybe', async () => {
+  const contents = `- [ ] This is something that needs doing #someday`;
+  const todos = await todoParser.parseTasks('/Daily Notes/today.md', contents);
+  const todo = todos[0];
+  expect(todo.actionDate).toBeUndefined();
+  expect(todo.isSomedayMaybeNote).toEqual(true);
+});
+
+test('parsing an outstanding todo with a specific action date and a someday/maybe tag', async () => {
+  const contents = `- [ ] This is something that needs doing #2021-02-16 #someday`;
+  const todos = await todoParser.parseTasks('/', contents);
+  const todo = todos[0];
+  expect(todo.status).toEqual(TodoItemStatus.Todo);
+  expect(todo.actionDate).toBeUndefined();
+  expect(todo.isSomedayMaybeNote).toEqual(true);
+});

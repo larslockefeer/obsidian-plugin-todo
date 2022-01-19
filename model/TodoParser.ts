@@ -23,15 +23,16 @@ export class TodoParser {
     const actionDate = this.parseDueDate(description, filePath);
     const descriptionWithoutDate = this.dateParser.removeDate(description);
     const somedayPattern = /#(someday)/g;
+    const isSomedayMaybeTask = description.match(somedayPattern) != null;
 
     return new TodoItem(
       status,
       descriptionWithoutDate,
-      description.match(somedayPattern) != null,
+      isSomedayMaybeTask,
       filePath,
       (entry.index ?? 0) + todoItemOffset,
       entry[0].length - todoItemOffset,
-      actionDate,
+      !isSomedayMaybeTask ? actionDate : undefined,
     );
   }
 
