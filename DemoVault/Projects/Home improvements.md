@@ -1,2 +1,2 @@
 # Home improvements
-- [ ] Fix broken window [due:: 2021-02-20]
+- [ ] Fix broken window #2021-02-20
