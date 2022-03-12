@@ -3,19 +3,28 @@ import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 import { DateTime } from 'luxon';
 import { extractDueDateFromDailyNotesFile } from '../util/DailyNoteParser';
 
+const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
+
+const excludedFolders: string[] = []; // TODO: Read from settings
+const excludeFolder = (folder: string): boolean =>
+  excludedFolders.filter(excludedFolder => folder.startsWith(excludedFolder)).length > 0;
+
 export class TodoParser {
   private dateParser: DateParser;
 
-  constructor(dateParser: DateParser) {
+  constructor (dateParser: DateParser) {
     this.dateParser = dateParser;
   }
 
-  async parseTasks(filePath: string, fileContents: string): Promise<TodoItem[]> {
-    const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
-    return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
+  async parseTasks (filePath: string, fileContents: string): Promise<TodoItem[]> {
+    if (excludeFolder(filePath)) {
+      return [];
+    }
+
+    return [...fileContents.matchAll(pattern)].map(task => this.parseTask(filePath, task));
   }
 
-  private parseTask(filePath: string, entry: RegExpMatchArray): TodoItem {
+  private parseTask (filePath: string, entry: RegExpMatchArray): TodoItem {
     const todoItemOffset = 2; // Strip off `-|* `
     const status = entry[2] === 'x' ? TodoItemStatus.Done : TodoItemStatus.Todo;
     const description = entry[3];
@@ -36,7 +45,7 @@ export class TodoParser {
     );
   }
 
-  private parseDueDate(description: string, filePath: string): DateTime | undefined {
+  private parseDueDate (description: string, filePath: string): DateTime | undefined {
     const taggedDueDate = this.dateParser.parseDate(description);
     if (taggedDueDate) {
       return taggedDueDate;
