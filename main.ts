@@ -23,6 +23,14 @@ export default class TodoPlugin extends Plugin {
     this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
     this.dateFormatter = new DateFormatter(this.settings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
+    
+    this.addCommand({
+      id: 'create-todo-list',
+      name: 'Todo List',
+      callback: () => {
+        console.log('test);
+      },
+    });
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
       const todos: TodoItem[] = [];
