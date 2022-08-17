@@ -1,4 +1,4 @@
-import { App, Plugin, PluginManifest, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, Plugin, PluginManifest, TFile, WorkspaceLeaf, Editor, MarkdownView } from 'obsidian';
 import { VIEW_TYPE_TODO } from './constants';
 import { TodoItemView, TodoItemViewProps } from './ui/TodoItemView';
 import { TodoItem, TodoItemStatus } from './model/TodoItem';
@@ -23,12 +23,14 @@ export default class TodoPlugin extends Plugin {
     this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
     this.dateFormatter = new DateFormatter(this.settings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
-    
+
     this.addCommand({
       id: 'create-todo-list',
-      name: 'Todo List',
-      callback: () => {
-        console.log('test);
+      name: '☐ Create',
+      editorCallback: (editor: Editor) => {
+        let originVal: string = editor.getValue();
+        originVal += '- [ ] ';
+        editor.setValue(originVal);
       },
     });
 
