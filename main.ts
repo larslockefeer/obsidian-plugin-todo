@@ -34,7 +34,7 @@ export default class TodoPlugin extends Plugin {
         openFile: (filePath: string) => {
           const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
           if (this.settings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
-            this.app.workspace.splitActiveLeaf().openFile(file);
+            this.app.workspace.getLeaf(true).openFile(file);
           } else {
             this.app.workspace.getUnpinnedLeaf().openFile(file);
           }
