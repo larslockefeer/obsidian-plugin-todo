@@ -39,7 +39,10 @@ export class SettingsTab extends PluginSettingTab {
           tagFormatSetting.descEl.empty();
           tagFormatSetting.setDesc(this.dateTagFormatDescription());
 
-          this.plugin.updateSettings({ ...currentSettings, dateTagFormat });
+          const newSettings = { ...currentSettings }
+          newSettings.dateTagFormat = dateTagFormat;
+
+          this.plugin.updateSettings(newSettings);
         }),
       );
 
@@ -66,6 +69,111 @@ export class SettingsTab extends PluginSettingTab {
           this.plugin.updateSettings({ ...currentSettings, dateFormat });
         }),
       );
+
+    const somedayFormatSetting = new Setting(containerEl);
+    somedayFormatSetting
+      .setName('Someday Pattern/s')
+      .setDesc(this.somedayParserInputDescription())
+      .addText((text) => {
+        let placeholder = this.stringifyTextParserPatternInput(DEFAULT_SETTINGS.somedayPatterns);
+        let value = this.stringifyTextParserPatternInput(currentSettings.somedayPatterns);
+
+        text.setPlaceholder(placeholder);
+        if (placeholder !== value) {
+          text.setValue(value);
+        }
+
+        text.onChange(async (patternString) => {
+          somedayFormatSetting.descEl.empty();
+          somedayFormatSetting.setDesc(this.somedayParserInputDescription());
+
+          const somedayPatterns = this.parseTextParserPatternInput(patternString);
+          const newSettings = { ...currentSettings, somedayPatterns };
+
+          this.plugin.updateSettings(newSettings);
+        })
+      }).addButton((button) => {
+        button.setButtonText('Reset to default');
+        button.onClick(async () => {
+
+          const somedayPatterns = DEFAULT_SETTINGS.somedayPatterns;
+          const newSettings = { ...currentSettings, somedayPatterns };
+          
+          await this.plugin.updateSettings(newSettings);
+
+          this.display();
+        });
+      });
+
+    const hideFormatSetting = new Setting(containerEl);
+    hideFormatSetting
+      .setName('Hide TODO Pattern/s')
+      .setDesc(this.hideParserInputDescription())
+      .addText((text) => {
+        let placeholder = this.stringifyTextParserPatternInput(DEFAULT_SETTINGS.hidePatterns);
+        let value = this.stringifyTextParserPatternInput(currentSettings.hidePatterns);
+
+        text.setPlaceholder(placeholder);
+        if (placeholder !== value) {
+          text.setValue(value);
+        }
+
+        text.onChange(async (patternString) => {
+          hideFormatSetting.descEl.empty();
+          hideFormatSetting.setDesc(this.hideParserInputDescription());
+
+          const hidePatterns = this.parseTextParserPatternInput(patternString);
+          const newSettings = { ...currentSettings, hidePatterns };
+
+          this.plugin.updateSettings(newSettings);
+        })
+      }
+      ).addButton((button) => {
+        button.setButtonText('Reset to default');
+        button.onClick(async () => {
+          const hidePatterns = DEFAULT_SETTINGS.hidePatterns
+          const newSettings = { ...currentSettings, hidePatterns };
+          
+          await this.plugin.updateSettings(newSettings);
+
+          this.display();
+        });
+      });
+
+    const includeFolderPatterns = new Setting(containerEl);
+    includeFolderPatterns
+      .setName('Pattern/s for files to include')
+      .setDesc(this.includeFolderPatternsDescription())
+      .addText((text) => {
+        let placeholder = this.stringifyTextParserPatternInput(DEFAULT_SETTINGS.includeFolderPatterns);
+        let value = this.stringifyTextParserPatternInput(currentSettings.includeFolderPatterns);
+
+        text.setPlaceholder(placeholder);
+        if (placeholder !== value) {
+          text.setValue(value);
+        }
+
+        text.onChange(async (patternString) => {
+          includeFolderPatterns.descEl.empty();
+          includeFolderPatterns.setDesc(this.includeFolderPatternsDescription());
+
+          const folderPatterns = this.parseTextParserPatternInput(patternString);
+
+          this.plugin.updateSettings({ ...currentSettings, includeFolderPatterns: folderPatterns });
+        })
+      }
+      ).addButton((button) => {
+        button.setButtonText('Reset to default');
+        button.onClick(async () => {
+          includeFolderPatterns.descEl.empty();
+          includeFolderPatterns.setDesc(this.includeFolderPatternsDescription());
+
+          const folderPatterns = DEFAULT_SETTINGS.includeFolderPatterns;
+          await this.plugin.updateSettings({ ...currentSettings, includeFolderPatterns: folderPatterns });
+
+          this.display();
+        });
+      });
 
     new Setting(containerEl)
       .setName('Open files in a new leaf')
@@ -112,6 +220,50 @@ export class SettingsTab extends PluginSettingTab {
     return el;
   }
 
+  private somedayParserInputDescription(error?: string): DocumentFragment {
+    const el = document.createDocumentFragment();
+    el.appendText('TODOs with one or more matching patterns will be considered \'someday\' tasks.');
+    el.appendChild(document.createElement('br'));
+    el.appendText('Can be either a string, or a json object containing strings of patterns.');
+    el.appendChild(document.createElement('br'));
+
+    if (error != null) {
+      el.appendChild(document.createElement('br'));
+      el.appendText(`Error: ${error}`);
+    }
+    return el;
+  }
+
+
+  private hideParserInputDescription(error?: string): DocumentFragment {
+    const el = document.createDocumentFragment();
+    el.appendText('TODOs with one or more matching patterns will be skipped');
+    el.appendChild(document.createElement('br'));
+    el.appendText('Can be either a string, or a json object containing strings of patterns.');
+    el.appendChild(document.createElement('br'));
+
+    if (error != null) {
+      el.appendChild(document.createElement('br'));
+      el.appendText(`Error: ${error}`);
+    }
+    return el;
+  }
+
+  private includeFolderPatternsDescription(error?: string): DocumentFragment {
+    const el = document.createDocumentFragment();
+    el.appendText('The plugin will only parse TODOs in files that match one of the patterns.');
+    el.appendChild(document.createElement('br'));
+    el.appendText('Can be either a string, or a json object containing strings of patterns.');
+    el.appendChild(document.createElement('br'));
+
+    if (error != null) {
+      el.appendChild(document.createElement('br'));
+      el.appendText(`Error: ${error}`);
+    }
+    return el;
+  }
+
+
   private validateDateTag(dateTag: string): boolean {
     if (dateTag.length === 0) {
       return true;
@@ -127,5 +279,35 @@ export class SettingsTab extends PluginSettingTab {
     const formatted = expected.toFormat(dateFormat);
     const parsed = DateTime.fromFormat(formatted, dateFormat);
     return parsed.hasSame(expected, 'day') && parsed.hasSame(expected, 'month') && parsed.hasSame(expected, 'year');
+  }
+
+  private stringifyTextParserPatternInput(patterns: string | string[] | null): string {
+    if (Array.isArray(patterns)) {
+      return JSON.stringify(patterns);
+    }
+
+    return patterns;
+  }
+
+  private parseTextParserPatternInput(patternString: string): string | string[] | null {
+    if (patternString == null || patternString == undefined || patternString.length == 0) {
+      return null;
+    }
+
+    try {
+      // Attempt to parse the input as JSON
+      const parsed = JSON.parse(patternString);
+
+      // Check if the parsed result is an array of strings
+      if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+        return parsed;
+      }
+
+      // If JSON.parse doesn't throw but the result is not a valid array, treat it as a single pattern string
+      return patternString;
+    } catch (e) {
+      // If JSON parsing fails, treat the input as a single string
+      return patternString;
+    }
   }
 }
