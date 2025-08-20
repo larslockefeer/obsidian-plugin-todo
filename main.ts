@@ -47,9 +47,9 @@ export default class TodoPlugin extends Plugin {
       return this.view;
     });
 
-    this.app.workspace.onLayoutReady(() => {
-      this.initLeaf();
-      this.triggerIndex();
+    this.app.workspace.onLayoutReady(async () => {
+      await this.initLeaf();
+      await this.triggerIndex();
     });
   }
 
@@ -57,11 +57,11 @@ export default class TodoPlugin extends Plugin {
     this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).forEach((leaf) => leaf.detach());
   }
 
-  initLeaf(): void {
+  async initLeaf(): Promise<void> {
     if (this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).length) {
       return;
     }
-    this.app.workspace.getRightLeaf(false).setViewState({
+    await this.app.workspace.getRightLeaf(false).setViewState({
       type: VIEW_TYPE_TODO,
     });
   }
@@ -82,6 +82,9 @@ export default class TodoPlugin extends Plugin {
   }
 
   tick(todos: TodoItem[]): void {
+    if (!this.view) {
+      return;
+    }
     this.view.setProps((currentProps: TodoItemViewProps) => {
       return {
         ...currentProps,
