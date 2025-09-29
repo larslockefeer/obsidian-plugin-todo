@@ -3,6 +3,7 @@ import { TodoItem, TodoItemStatus } from '../model/TodoItem';
 import { TodoPluginSettings } from '../model/TodoPluginSettings';
 import { DateParser } from '../util/DateParser';
 import { TodoParser } from '../model/TodoParser';
+import { TextPatternParser } from 'util/TextPatternParser';
 
 export class TodoIndex {
   private vault: Vault;
@@ -24,8 +25,12 @@ export class TodoIndex {
     const timeStart = new Date().getTime();
 
     const markdownFiles = this.vault.getMarkdownFiles();
+
+    //pass in parser to avoid re-creating it for each file
+    const todoParser = this.NewTodoParser();
+
     for (const file of markdownFiles) {
-      const todos = await this.parseTodosInFile(file);
+      const todos = await this.parseTodosInFile(file, todoParser);
       numberOfTodos += todos.length;
       if (todos.length > 0) {
         todoMap.set(file.path, todos);
@@ -54,14 +59,33 @@ export class TodoIndex {
   }
 
   setSettings(settings: TodoPluginSettings): void {
-    const oldSettings = this.settings;
+    const oldSettings = {...this.settings};
     this.settings = settings;
 
-    const reIndexRequired =
-      oldSettings.dateFormat !== settings.dateFormat || oldSettings.dateTagFormat !== settings.dateTagFormat;
-    if (reIndexRequired) {
+    if (this.reIndexRequired(oldSettings, this.settings)) {
       this.initialize();
     }
+  }
+
+  private reIndexRequired(oldSettings: TodoPluginSettings, newSettings: TodoPluginSettings) {
+    return(
+      this.patternChanged(oldSettings.includeFolderPatterns, newSettings.includeFolderPatterns)
+      || this.patternChanged(oldSettings.dateTagFormat, newSettings.dateTagFormat)
+      || this.patternChanged(oldSettings.hidePatterns, newSettings.hidePatterns)
+      || this.patternChanged(oldSettings.somedayPatterns, newSettings.somedayPatterns)
+    );
+  }
+
+  private patternChanged(value1: string | string[] | null, value2: string | string[] | null): boolean {
+    if (Array.isArray(value1) && Array.isArray(value2)) {
+      if (value1.length !== value2.length || value1.some((val, index) => val !== value2[index])) {
+        return true;
+      }
+    } else if (value1 !== value2) {
+      return true;
+    }
+    
+    return false;
   }
 
   private indexAbstractFile(file: TAbstractFile) {
@@ -72,7 +96,10 @@ export class TodoIndex {
   }
 
   private indexFile(file: TFile) {
-    this.parseTodosInFile(file).then((todos) => {
+    // one off file?, spin up a new parser
+    const todoParser = this.NewTodoParser();
+
+    this.parseTodosInFile(file, todoParser).then((todos) => {
       this.todos.set(file.path, todos);
       this.invokeListeners();
     });
@@ -85,18 +112,18 @@ export class TodoIndex {
     }
   }
 
-  private async parseTodosInFile(file: TFile): Promise<TodoItem[]> {
+  private async parseTodosInFile(file: TFile, todoParser: TodoParser): Promise<TodoItem[]> {
     // TODO: Does it make sense to index completed TODOs at all?
-    const dateParser = new DateParser(this.settings.dateTagFormat, this.settings.dateFormat);
-    const todoParser = new TodoParser(dateParser);
     const fileContents = await this.vault.cachedRead(file);
     return todoParser
-      .parseTasks(file.path, fileContents)
-      .then((todos) => todos.filter((todo) => todo.status === TodoItemStatus.Todo));
+      .parseTasks(file.path, fileContents);
   }
 
   private registerEventHandlers() {
+    // build parser to insert into parseTodosInFile
+
     this.vault.on('create', (file: TAbstractFile) => {
+      this
       this.indexAbstractFile(file);
     });
     this.vault.on('modify', (file: TAbstractFile) => {
@@ -115,5 +142,17 @@ export class TodoIndex {
   private invokeListeners() {
     const todos = ([] as TodoItem[]).concat(...Array.from(this.todos.values()));
     this.listeners.forEach((listener) => listener(todos));
+  }
+
+  private NewTodoParser(): TodoParser {
+    // tag parsers
+    const dateParser = new DateParser(this.settings.dateTagFormat, this.settings.dateFormat);
+    const somedayParser = new TextPatternParser(this.settings.somedayPatterns);
+    const hideParser = new TextPatternParser(this.settings.hidePatterns);
+    const folderParser = new TextPatternParser(this.settings.includeFolderPatterns);
+
+    const todoParser = new TodoParser(dateParser, somedayParser, hideParser, folderParser, false);
+
+    return todoParser;
   }
 }

@@ -5,3 +5,4 @@
 - [ ] Do today #2022-02-09
 - [ ] Read "Meditations" by Marcus Aurelius #someday
 - [ ] Check out "The Queen's Gambit" on [[Netflix]]
+- [ ] This task is super important, i'll do it this week #never

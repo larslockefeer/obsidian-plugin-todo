@@ -2,11 +2,20 @@ import { TodoItemStatus } from './TodoItem';
 import { TodoParser } from './TodoParser';
 import { DateParser } from '../util/DateParser';
 import { DateTime } from 'luxon';
+import { TextPatternParser } from '../util/TextPatternParser';
 
 jest.mock('../util/DailyNoteParser');
 
 const dateParser = new DateParser(`#${DateParser.DateToken}`, 'yyyy-MM-dd');
-const todoParser = new TodoParser(dateParser);
+const somedayPattern = '#someday';
+const hidePattern = '#hide';
+const folderPatterns = '^(?!FAILPATH)';
+
+const somedayParser = new TextPatternParser(somedayPattern);
+const hideParser = new TextPatternParser(hidePattern);
+const folderParser = new TextPatternParser(folderPatterns);
+
+const todoParser = new TodoParser(dateParser, somedayParser, hideParser, folderParser, true);
 
 test('parsing an outstanding todo', async () => {
   const contents = `- [ ] This is something that needs doing`;
@@ -96,3 +105,11 @@ test('parsing an outstanding todo with a specific action date and a someday/mayb
   expect(todo.actionDate).toBeUndefined();
   expect(todo.isSomedayMaybeNote).toEqual(true);
 });
+
+test('Using a path that doesn\'t match one of the configured folder patterns - expect no return', async () => {
+  const contents = `- [ ] This is something that needs doing #2021-02-16 #someday`;
+  const todos = await todoParser.parseTasks('FAILPATH', contents);
+  
+  expect(todos.length).toEqual(0);
+});
+
