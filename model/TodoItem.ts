@@ -5,7 +5,7 @@ export enum TodoItemStatus {
   Done,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace -- Namespace merges with the enum to expose status helpers.
 export namespace TodoItemStatus {
   export function toggleStatus(status: TodoItemStatus): TodoItemStatus {
     switch (status) {
