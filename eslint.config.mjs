@@ -8,7 +8,6 @@ export default defineConfig([
       "node_modules/**",
       "main.js",
       "coverage/**",
-      ".eslintrc.js",
       ".prettierrc.js",
       "jest.config.js",
       "rollup.config.js",
