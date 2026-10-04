@@ -17,7 +17,7 @@ export class SettingsTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Obsidian TODO Settings' });
+    new Setting(containerEl).setName('Obsidian todo').setHeading();
 
     const tagFormatSetting = new Setting(containerEl);
     tagFormatSetting
@@ -39,7 +39,7 @@ export class SettingsTab extends PluginSettingTab {
           tagFormatSetting.descEl.empty();
           tagFormatSetting.setDesc(this.dateTagFormatDescription());
 
-          this.plugin.updateSettings({ ...currentSettings, dateTagFormat });
+          await this.plugin.updateSettings({ ...currentSettings, dateTagFormat });
         }),
       );
 
@@ -63,7 +63,7 @@ export class SettingsTab extends PluginSettingTab {
           dateFormatSetting.descEl.empty();
           dateFormatSetting.setDesc(this.dateTagFormatDescription());
 
-          this.plugin.updateSettings({ ...currentSettings, dateFormat });
+          await this.plugin.updateSettings({ ...currentSettings, dateFormat });
         }),
       );
 
@@ -75,7 +75,7 @@ export class SettingsTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(currentSettings.openFilesInNewLeaf);
         toggle.onChange(async (openFilesInNewLeaf) => {
-          this.plugin.updateSettings({ ...currentSettings, openFilesInNewLeaf });
+          await this.plugin.updateSettings({ ...currentSettings, openFilesInNewLeaf });
         });
       });
   }
