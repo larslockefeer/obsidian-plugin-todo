@@ -22,4 +22,14 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ["**/*.test.ts"],
+    languageOptions: {
+      globals: {
+        expect: "readonly",
+        jest: "readonly",
+        test: "readonly",
+      },
+    },
+  },
 ]);
