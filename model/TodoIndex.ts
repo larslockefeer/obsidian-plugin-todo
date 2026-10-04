@@ -20,37 +20,30 @@ export class TodoIndex {
   async initialize(): Promise<void> {
     // TODO: persist index & last sync timestamp; only parse files that changed since then.
     const todoMap = new Map<string, TodoItem[]>();
-    let numberOfTodos = 0;
-    const timeStart = new Date().getTime();
 
     const markdownFiles = this.vault.getMarkdownFiles();
     for (const file of markdownFiles) {
       const todos = await this.parseTodosInFile(file);
-      numberOfTodos += todos.length;
       if (todos.length > 0) {
         todoMap.set(file.path, todos);
       }
     }
 
-    const totalTimeMs = new Date().getTime() - timeStart;
-    console.log(
-      `[obsidian-plugin-todo] Parsed ${numberOfTodos} TODOs from ${markdownFiles.length} markdown files in (${
-        totalTimeMs / 1000.0
-      }s)`,
-    );
     this.todos = todoMap;
     this.registerEventHandlers();
     this.invokeListeners();
   }
 
-  setStatus(todo: TodoItem, newStatus: TodoItemStatus): void {
-    const file = this.vault.getAbstractFileByPath(todo.sourceFilePath) as TFile;
-    const fileContents = this.vault.read(file);
-    fileContents.then((c: string) => {
-      const newTodo = `[${newStatus === TodoItemStatus.Done ? 'x' : ' '}] ${todo.description}`;
-      const newContents = c.substring(0, todo.startIndex) + newTodo + c.substring(todo.startIndex + todo.length);
-      this.vault.modify(file, newContents);
-    });
+  async setStatus(todo: TodoItem, newStatus: TodoItemStatus): Promise<void> {
+    const file = this.vault.getAbstractFileByPath(todo.sourceFilePath);
+    if (!(file instanceof TFile)) {
+      return;
+    }
+
+    const contents = await this.vault.read(file);
+    const newTodo = `[${newStatus === TodoItemStatus.Done ? 'x' : ' '}] ${todo.description}`;
+    const newContents = contents.substring(0, todo.startIndex) + newTodo + contents.substring(todo.startIndex + todo.length);
+    await this.vault.modify(file, newContents);
   }
 
   setSettings(settings: TodoPluginSettings): void {
@@ -60,7 +53,7 @@ export class TodoIndex {
     const reIndexRequired =
       oldSettings.dateFormat !== settings.dateFormat || oldSettings.dateTagFormat !== settings.dateTagFormat;
     if (reIndexRequired) {
-      this.initialize();
+      void this.initialize();
     }
   }
 
@@ -68,14 +61,17 @@ export class TodoIndex {
     if (!(file instanceof TFile)) {
       return;
     }
-    this.indexFile(file as TFile);
+    void this.indexFile(file);
   }
 
-  private indexFile(file: TFile) {
-    this.parseTodosInFile(file).then((todos) => {
+  private async indexFile(file: TFile): Promise<void> {
+    try {
+      const todos = await this.parseTodosInFile(file);
       this.todos.set(file.path, todos);
       this.invokeListeners();
-    });
+    } catch {
+      // Keep the last known index if reading or parsing a changed file fails.
+    }
   }
 
   private clearIndex(path: string, silent = false) {
@@ -90,9 +86,8 @@ export class TodoIndex {
     const dateParser = new DateParser(this.settings.dateTagFormat, this.settings.dateFormat);
     const todoParser = new TodoParser(dateParser);
     const fileContents = await this.vault.cachedRead(file);
-    return todoParser
-      .parseTasks(file.path, fileContents)
-      .then((todos) => todos.filter((todo) => todo.status === TodoItemStatus.Todo));
+    const todos = await todoParser.parseTasks(file.path, fileContents);
+    return todos.filter((todo) => todo.status === TodoItemStatus.Todo);
   }
 
   private registerEventHandlers() {
