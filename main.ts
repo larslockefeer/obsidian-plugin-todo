@@ -11,16 +11,25 @@ import { DateTime } from 'luxon';
 export default class TodoPlugin extends Plugin {
   private dateFormatter: DateFormatter;
   private todoIndex: TodoIndex;
-  private view: TodoItemView;
+
   private pluginSettings: TodoPluginSettings;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    this.todoIndex = new TodoIndex(this.app.vault, DEFAULT_SETTINGS, this.tick.bind(this));
+    this.todoIndex = new TodoIndex(this.app.vault, DEFAULT_SETTINGS, (todos: TodoItem[]) => this.tick(todos));
   }
 
-  async onload(): Promise<void> {
-    this.pluginSettings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+  onload(): void {
+    void this.loadPlugin().catch((error: unknown) => {
+      console.error('[obsidian-plugin-todo] Failed to load plugin', error);
+    });
+  }
+
+  private async loadPlugin(): Promise<void> {
+    const loadedData: unknown = await this.loadData();
+    const savedSettings =
+      typeof loadedData === 'object' && loadedData !== null ? (loadedData as Partial<TodoPluginSettings>) : {};
+    this.pluginSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
     this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
 
@@ -32,25 +41,40 @@ export default class TodoPlugin extends Plugin {
           return this.dateFormatter.formatDate(date);
         },
         openFile: (filePath: string) => {
-          const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+          const file = this.app.vault.getAbstractFileByPath(filePath);
+          if (!(file instanceof TFile)) {
+            return;
+          }
+
           if (this.pluginSettings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
-            this.app.workspace.splitActiveLeaf().openFile(file);
+            void this.app.workspace.getLeaf(true).openFile(file).catch((error: unknown) => {
+              console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
+            });
           } else {
-            this.app.workspace.getUnpinnedLeaf().openFile(file);
+            void this.app.workspace.getLeaf(false).openFile(file).catch((error: unknown) => {
+              console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
+            });
           }
         },
         toggleTodo: (todo: TodoItem, newStatus: TodoItemStatus) => {
-          this.todoIndex.setStatus(todo, newStatus);
+          void this.todoIndex.setStatus(todo, newStatus).catch((error: unknown) => {
+            console.error('[obsidian-plugin-todo] Failed to update TODO status', error);
+          });
         },
       };
-      this.view = new TodoItemView(leaf, props);
-      return this.view;
+      return new TodoItemView(leaf, props);
     });
 
-    this.app.workspace.onLayoutReady(async () => {
-      await this.initLeaf();
-      await this.triggerIndex();
+    this.app.workspace.onLayoutReady(() => {
+      void this.initializeView().catch((error: unknown) => {
+        console.error('[obsidian-plugin-todo] Failed to initialize TODO view', error);
+      });
     });
+  }
+
+  private async initializeView(): Promise<void> {
+    await this.initLeaf();
+    await this.triggerIndex();
   }
 
   onunload(): void {
@@ -82,14 +106,13 @@ export default class TodoPlugin extends Plugin {
   }
 
   tick(todos: TodoItem[]): void {
-    if (!this.view) {
-      return;
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO)) {
+      if (leaf.view instanceof TodoItemView) {
+        leaf.view.setProps((currentProps: TodoItemViewProps) => ({
+          ...currentProps,
+          todos,
+        }));
+      }
     }
-    this.view.setProps((currentProps: TodoItemViewProps) => {
-      return {
-        ...currentProps,
-        todos: todos,
-      };
-    });
   }
 }

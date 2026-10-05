@@ -25,14 +25,22 @@ jobs:
       - name: Lint
         run: yarn lint-on-ci
       - name: Install virtual display
-        run: sudo apt-get update && sudo apt-get install --yes xvfb herbstluftwm x11-utils
+        run: sudo apt-get update && sudo apt-get install --yes xvfb herbstluftwm x11-utils x11-xserver-utils
       - name: Run Obsidian end-to-end tests
         run: |
           set -euo pipefail
           Xvfb :99 -screen 0 1280x1024x24 &
           xvfb_pid=$!
           wm_pid=""
-          trap 'kill "$wm_pid" "$xvfb_pid" 2>/dev/null || true' EXIT
+          cleanup() {
+            if [[ -n "$wm_pid" ]]; then
+              herbstclient quit >/dev/null 2>&1 || kill "$wm_pid" 2>/dev/null || true
+              wait "$wm_pid" 2>/dev/null || true
+            fi
+            kill "$xvfb_pid" 2>/dev/null || true
+            wait "$xvfb_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
           for attempt in {1..30}; do
             if xdpyinfo -display :99 >/dev/null 2>&1; then break; fi
             sleep 1

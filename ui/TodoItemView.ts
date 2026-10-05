@@ -105,8 +105,8 @@ export class TodoItemView extends ItemView {
 
   private renderItems(container: HTMLDivElement) {
     this.props.todos
-      .filter(this.filterForState, this)
-      .sort(this.sortByActionDate)
+      .filter((todo, index, todos) => this.filterForState(todo, index, todos))
+      .sort((a, b) => this.sortByActionDate(a, b))
       .forEach((todo) => {
         container.createDiv('todo-item-view-item', (el) => {
           el.createDiv('todo-item-view-item-checkbox', (el) => {
@@ -118,7 +118,7 @@ export class TodoItemView extends ItemView {
             });
           });
           el.createDiv('todo-item-view-item-description', (el) => {
-            MarkdownRenderer.renderMarkdown(todo.description, el, todo.sourceFilePath, this);
+            void MarkdownRenderer.render(this.app, todo.description, el, todo.sourceFilePath, this);
             if (todo.actionDate) {
               el.createSpan('due-date', (el) => {
                 if (todo.actionDate.startOf('day') < DateTime.now().startOf('day')) {

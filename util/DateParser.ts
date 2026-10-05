@@ -34,5 +34,5 @@ export class DateParser {
 }
 
 const stringToPattern = (rawString: string) => {
-  return rawString.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return rawString.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
