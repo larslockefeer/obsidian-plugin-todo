@@ -1,7 +1,7 @@
 {
   "name": "obsidian-plugin-todo",
   "version": "0.2.0",
-  "description": "Text-based GTD. Collects outstanding TODOs from your vault and presents them in Today, Scheduled, Inbox and Someday/Maybe lists.",
+  "description": "Text-based TODO tracking. Collects outstanding TODOs from your vault and presents them in Today, Scheduled, Inbox and Someday/Maybe lists.",
   "main": "main.js",
   "scripts": {
     "typecheck": "tsc --project tsconfig.build.json",
