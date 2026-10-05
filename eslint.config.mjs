@@ -26,6 +26,7 @@ export default defineConfig([
     files: ["**/*.test.ts"],
     languageOptions: {
       globals: {
+        beforeEach: "readonly",
         expect: "readonly",
         jest: "readonly",
         test: "readonly",
