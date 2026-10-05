@@ -3,6 +3,12 @@ import { DateTime } from 'luxon';
 import TodoPlugin from 'main';
 import { DEFAULT_SETTINGS } from '../model/TodoPluginSettings';
 
+interface SettingDefinition {
+  name: string;
+  desc?: string;
+  render: (setting: Setting) => void;
+}
+
 export class SettingsTab extends PluginSettingTab {
   private plugin: TodoPlugin;
 
@@ -13,69 +19,96 @@ export class SettingsTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-    const currentSettings = this.plugin.getSettings();
 
     containerEl.empty();
 
     new Setting(containerEl).setName('Obsidian todo').setHeading();
 
-    const tagFormatSetting = new Setting(containerEl);
-    tagFormatSetting
+    this.renderDateTagFormat(new Setting(containerEl));
+    this.renderDateFormat(new Setting(containerEl));
+    this.renderOpenFilesInNewLeaf(new Setting(containerEl));
+  }
+
+  getSettingDefinitions(): SettingDefinition[] {
+    return [
+      {
+        name: 'Date tag format',
+        desc: 'Format used to mark task due dates. Must include the %date% token.',
+        render: (setting) => this.renderDateTagFormat(setting),
+      },
+      {
+        name: 'Date format',
+        desc: 'Date format used to recognise due dates. Uses Luxon format tokens.',
+        render: (setting) => this.renderDateFormat(setting),
+      },
+      {
+        name: 'Open files in a new leaf',
+        desc: 'Open the file containing a todo in a new leaf instead of replacing the current file.',
+        render: (setting) => this.renderOpenFilesInNewLeaf(setting),
+      },
+    ];
+  }
+
+  private renderDateTagFormat(setting: Setting): void {
+    const currentSettings = this.plugin.getSettings();
+    setting
       .setName('Date tag format')
       .setDesc(this.dateTagFormatDescription())
       .addText((text) =>
         text.setPlaceholder(currentSettings.dateTagFormat).onChange(async (dateTagFormat) => {
-          // TODO: refactor this
           if (dateTagFormat.length === 0) {
             dateTagFormat = DEFAULT_SETTINGS.dateTagFormat;
           }
 
           if (!this.validateDateTag(dateTagFormat)) {
-            tagFormatSetting.descEl.empty();
-            tagFormatSetting.setDesc(this.dateTagFormatDescription('Date tag must include %date% token.'));
+            setting.descEl.empty();
+            setting.setDesc(this.dateTagFormatDescription('Date tag must include %date% token.'));
             return;
           }
 
-          tagFormatSetting.descEl.empty();
-          tagFormatSetting.setDesc(this.dateTagFormatDescription());
+          setting.descEl.empty();
+          setting.setDesc(this.dateTagFormatDescription());
 
-          await this.plugin.updateSettings({ ...currentSettings, dateTagFormat });
+          await this.plugin.updateSettings({ ...this.plugin.getSettings(), dateTagFormat });
         }),
       );
+  }
 
-    const dateFormatSetting = new Setting(containerEl);
-    dateFormatSetting
+  private renderDateFormat(setting: Setting): void {
+    const currentSettings = this.plugin.getSettings();
+    setting
       .setName('Date format')
       .setDesc(this.dateFormatDescription())
       .addText((text) =>
         text.setPlaceholder(currentSettings.dateFormat).onChange(async (dateFormat) => {
-          // TODO: refactor this
           if (dateFormat.length === 0) {
             dateFormat = DEFAULT_SETTINGS.dateFormat;
           }
 
           if (!this.validateDateFormat(dateFormat)) {
-            dateFormatSetting.descEl.empty();
-            dateFormatSetting.setDesc(this.dateTagFormatDescription('Invalid date format.'));
+            setting.descEl.empty();
+            setting.setDesc(this.dateTagFormatDescription('Invalid date format.'));
             return;
           }
 
-          dateFormatSetting.descEl.empty();
-          dateFormatSetting.setDesc(this.dateTagFormatDescription());
+          setting.descEl.empty();
+          setting.setDesc(this.dateFormatDescription());
 
-          await this.plugin.updateSettings({ ...currentSettings, dateFormat });
+          await this.plugin.updateSettings({ ...this.plugin.getSettings(), dateFormat });
         }),
       );
+  }
 
-    new Setting(containerEl)
+  private renderOpenFilesInNewLeaf(setting: Setting): void {
+    setting
       .setName('Open files in a new leaf')
       .setDesc(
-        'If enabled, when opening the file containing a TODO that file will open in a new leaf. If disabled, it will replace the file that you currently have open.',
+        'If enabled, when opening the file containing a todo that file will open in a new leaf. If disabled, it will replace the file that you currently have open.',
       )
       .addToggle((toggle) => {
-        toggle.setValue(currentSettings.openFilesInNewLeaf);
+        toggle.setValue(this.plugin.getSettings().openFilesInNewLeaf);
         toggle.onChange(async (openFilesInNewLeaf) => {
-          await this.plugin.updateSettings({ ...currentSettings, openFilesInNewLeaf });
+          await this.plugin.updateSettings({ ...this.plugin.getSettings(), openFilesInNewLeaf });
         });
       });
   }
