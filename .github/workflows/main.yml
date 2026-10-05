@@ -1,18 +1,46 @@
 name: CI
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Yarn
+        run: npm install --global yarn@1.22.22
       - name: Install dependencies
-        run: yarn install
-      - name: Run tests
-        run: yarn test
+        run: yarn install --frozen-lockfile
+      - name: Build plugin
+        run: yarn build
+      - name: Run unit tests
+        run: yarn test --runInBand
       - name: Lint
         run: yarn lint-on-ci
+      - name: Install virtual display
+        run: sudo apt-get update && sudo apt-get install --yes xvfb herbstluftwm x11-utils
+      - name: Run Obsidian end-to-end tests
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 1280x1024x24 &
+          xvfb_pid=$!
+          wm_pid=""
+          trap 'kill "$wm_pid" "$xvfb_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if xdpyinfo -display :99 >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          xdpyinfo -display :99 >/dev/null
+          herbstluftwm &
+          wm_pid=$!
+          sleep 1
+          yarn test:e2e
+        env:
+          DISPLAY: :99

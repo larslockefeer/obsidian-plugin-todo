@@ -12,7 +12,7 @@ export default class TodoPlugin extends Plugin {
   private dateFormatter: DateFormatter;
   private todoIndex: TodoIndex;
   private view: TodoItemView;
-  private settings: TodoPluginSettings;
+  private pluginSettings: TodoPluginSettings;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
@@ -20,8 +20,8 @@ export default class TodoPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
-    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
+    this.pluginSettings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+    this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
@@ -33,7 +33,7 @@ export default class TodoPlugin extends Plugin {
         },
         openFile: (filePath: string) => {
           const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-          if (this.settings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
+          if (this.pluginSettings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
             this.app.workspace.splitActiveLeaf().openFile(file);
           } else {
             this.app.workspace.getUnpinnedLeaf().openFile(file);
@@ -67,13 +67,13 @@ export default class TodoPlugin extends Plugin {
   }
 
   getSettings(): TodoPluginSettings {
-    return this.settings;
+    return this.pluginSettings;
   }
 
   async updateSettings(settings: TodoPluginSettings): Promise<void> {
-    this.settings = settings;
-    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
-    await this.saveData(this.settings);
+    this.pluginSettings = settings;
+    this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
+    await this.saveData(this.pluginSettings);
     this.todoIndex.setSettings(settings);
   }
 

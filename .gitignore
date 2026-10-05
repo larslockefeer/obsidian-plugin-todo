@@ -17,3 +17,6 @@ main.js
 # Demo vault
 DemoVault/.obsidian/plugins/obsidian-plugin-todo
 DemoVault/.obsidian/workspace
+.tsbuild/
+.obsidian-cache/
+e2e-artifacts/
