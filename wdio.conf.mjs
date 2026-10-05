@@ -1,19 +1,25 @@
 export const config = {
   runner: 'local',
-  framework: 'mocha',
-  specs: ['./e2e/**/*.e2e.mjs'],
+  framework: 'cucumber',
+  specs: ['./e2e/features/**/*.feature'],
   maxInstances: 1,
-  capabilities: [{
-    browserName: 'obsidian',
-    'wdio:obsidianOptions': {
-      appVersion: process.env.OBSIDIAN_VERSION || 'latest',
-      installerVersion: 'latest',
-      plugins: ['.'],
-      vault: './e2e/vaults/inbox',
+  capabilities: [
+    {
+      browserName: 'obsidian',
+      'wdio:obsidianOptions': {
+        appVersion: process.env.OBSIDIAN_VERSION || 'latest',
+        installerVersion: 'latest',
+        plugins: ['.'],
+        vault: './e2e/vaults/inbox',
+      },
     },
-  }],
+  ],
   services: ['obsidian'],
-  mochaOpts: { timeout: 120000 },
+  cucumberOpts: {
+    import: ['./e2e/step-definitions/**/*.mjs'],
+    timeout: 120000,
+    strict: true,
+  },
   waitforTimeout: 10000,
   logLevel: 'warn',
 };
