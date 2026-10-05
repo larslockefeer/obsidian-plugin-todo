@@ -11,8 +11,8 @@ import { DateTime } from 'luxon';
 export default class TodoPlugin extends Plugin {
   private dateFormatter: DateFormatter;
   private todoIndex: TodoIndex;
-  private view: TodoItemView;
-  private settings: TodoPluginSettings;
+
+  private pluginSettings: TodoPluginSettings;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
@@ -29,8 +29,8 @@ export default class TodoPlugin extends Plugin {
     const loadedData: unknown = await this.loadData();
     const savedSettings =
       typeof loadedData === 'object' && loadedData !== null ? (loadedData as Partial<TodoPluginSettings>) : {};
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings) as TodoPluginSettings;
-    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
+    this.pluginSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+    this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
     this.addSettingTab(new SettingsTab(this.app, this));
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
@@ -46,7 +46,7 @@ export default class TodoPlugin extends Plugin {
             return;
           }
 
-          if (this.settings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
+          if (this.pluginSettings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
             void this.app.workspace.splitActiveLeaf().openFile(file).catch((error: unknown) => {
               console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
             });
@@ -62,8 +62,7 @@ export default class TodoPlugin extends Plugin {
           });
         },
       };
-      this.view = new TodoItemView(leaf, props);
-      return this.view;
+      return new TodoItemView(leaf, props);
     });
 
     this.app.workspace.onLayoutReady(() => {
@@ -92,13 +91,13 @@ export default class TodoPlugin extends Plugin {
   }
 
   getSettings(): TodoPluginSettings {
-    return this.settings;
+    return this.pluginSettings;
   }
 
   async updateSettings(settings: TodoPluginSettings): Promise<void> {
-    this.settings = settings;
-    this.dateFormatter = new DateFormatter(this.settings.dateFormat);
-    await this.saveData(this.settings);
+    this.pluginSettings = settings;
+    this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
+    await this.saveData(this.pluginSettings);
     this.todoIndex.setSettings(settings);
   }
 
@@ -107,14 +106,13 @@ export default class TodoPlugin extends Plugin {
   }
 
   tick(todos: TodoItem[]): void {
-    if (!this.view) {
-      return;
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO)) {
+      if (leaf.view instanceof TodoItemView) {
+        leaf.view.setProps((currentProps: TodoItemViewProps) => ({
+          ...currentProps,
+          todos,
+        }));
+      }
     }
-    this.view.setProps((currentProps: TodoItemViewProps) => {
-      return {
-        ...currentProps,
-        todos: todos,
-      };
-    });
   }
 }

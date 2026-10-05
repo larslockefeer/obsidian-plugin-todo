@@ -4,6 +4,18 @@ import obsidianmd from "eslint-plugin-obsidianmd";
 export default defineConfig([
   ...obsidianmd.configs.recommended,
   {
+    files: ["package.json"],
+    rules: {
+      "depend/ban-dependencies": [
+        "error",
+        {
+          presets: ["native", "microutilities", "preferred"],
+          allowed: ["lint-staged"],
+        },
+      ],
+    },
+  },
+  {
     ignores: [
       "node_modules/**",
       "main.js",
@@ -16,9 +28,15 @@ export default defineConfig([
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ["eslint.config.*"],
-        },
+        projectService: true,
+      },
+    },
+  },
+  {
+    files: ["wdio.conf.mjs"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
       },
     },
   },
