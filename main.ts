@@ -41,7 +41,11 @@ export default class TodoPlugin extends Plugin {
           return this.dateFormatter.formatDate(date);
         },
         openFile: (filePath: string) => {
-          const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+          const file = this.app.vault.getAbstractFileByPath(filePath);
+          if (!(file instanceof TFile)) {
+            return;
+          }
+
           if (this.settings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
             void this.app.workspace.splitActiveLeaf().openFile(file).catch((error: unknown) => {
               console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
