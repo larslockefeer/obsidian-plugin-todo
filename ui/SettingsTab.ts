@@ -81,32 +81,31 @@ export class SettingsTab extends PluginSettingTab {
   }
 
   private dateTagFormatDescription(error?: string): DocumentFragment {
-    const el = document.createDocumentFragment();
+    const el = createFragment();
     el.appendText('The format in which the due date is included in the task description.');
-    el.appendChild(document.createElement('br'));
+    el.createEl('br');
     el.appendText('Must include the %date% token.');
-    el.appendChild(document.createElement('br'));
+    el.createEl('br');
     el.appendText("To configure the format of the date, see 'Date format'.");
     if (error != null) {
-      el.appendChild(document.createElement('br'));
+      el.createEl('br');
       el.appendText(`Error: ${error}`);
     }
     return el;
   }
 
   private dateFormatDescription(error?: string): DocumentFragment {
-    const el = document.createDocumentFragment();
+    const el = createFragment();
     el.appendText('Dates in this format will be recognised as due dates.');
-    el.appendChild(document.createElement('br'));
-
-    const a = document.createElement('a');
-    a.href = 'https://moment.github.io/luxon/#/formatting?id=table-of-tokens';
-    a.text = 'See the documentation for supported tokens.';
-    a.target = '_blank';
-    el.appendChild(a);
+    el.createEl('br');
+    el.createEl('a', {
+      href: 'https://moment.github.io/luxon/#/formatting?id=table-of-tokens',
+      text: 'See the documentation for supported tokens.',
+      attr: { target: '_blank' },
+    });
 
     if (error != null) {
-      el.appendChild(document.createElement('br'));
+      el.createEl('br');
       el.appendText(`Error: ${error}`);
     }
     return el;
