@@ -47,11 +47,11 @@ export default class TodoPlugin extends Plugin {
           }
 
           if (this.pluginSettings.openFilesInNewLeaf && this.app.workspace.getActiveFile()) {
-            void this.app.workspace.splitActiveLeaf().openFile(file).catch((error: unknown) => {
+            void this.app.workspace.getLeaf(true).openFile(file).catch((error: unknown) => {
               console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
             });
           } else {
-            void this.app.workspace.getUnpinnedLeaf().openFile(file).catch((error: unknown) => {
+            void this.app.workspace.getLeaf(false).openFile(file).catch((error: unknown) => {
               console.error(`[obsidian-plugin-todo] Failed to open ${filePath}`, error);
             });
           }
