@@ -12,5 +12,5 @@ export default {
     exports: 'default',
   },
   external: ['obsidian'],
-  plugins: [typescript(), nodeResolve({ browser: true }), commonjs(), nodePolyfills()],
+  plugins: [typescript({ outDir: './.tsbuild' }), nodeResolve({ browser: true }), commonjs(), nodePolyfills()],
 };
