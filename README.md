@@ -1,6 +1,6 @@
-## Obsidian TODO Plugin
+## Vault Todos
 
-Text-based GTD in Obsidian.
+Collects TODOs from across your vault, and organizes them into Today, Scheduled, Inbox, and Someday/Maybe lists.
 
 [<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="BuyMeACoffee" width="100">](https://www.buymeacoffee.com/larslockefeer)
 
