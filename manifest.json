@@ -1,9 +1,9 @@
 {
   "id": "obsidian-plugin-todo",
-  "name": "TODO | Text-based GTD",
+  "name": "Vault Todos",
   "version": "0.2.8",
   "minAppVersion": "0.16.0",
-  "description": "Text-based TODO tracking. Collects outstanding TODOs from your vault and presents them in Today, Scheduled, Inbox and Someday/Maybe lists.",
+  "description": "Collect TODOs from across your vault and organize them into Today, Scheduled, Inbox, and Someday/Maybe lists.",
   "author": "Lars Lockefeer",
   "authorUrl": "https://lars.lockefeer.online",
   "isDesktopOnly": false

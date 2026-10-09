@@ -1,4 +1,4 @@
-## Obsidian TODO Plugin
+## Vault Todos
 
 Text-based GTD in Obsidian.
 

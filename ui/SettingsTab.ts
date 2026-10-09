@@ -22,8 +22,6 @@ export class SettingsTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    new Setting(containerEl).setName('Obsidian todo').setHeading();
-
     this.renderDateTagFormat(new Setting(containerEl));
     this.renderDateFormat(new Setting(containerEl));
     this.renderOpenFilesInNewLeaf(new Setting(containerEl));
