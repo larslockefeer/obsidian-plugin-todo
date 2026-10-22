@@ -1,0 +1,155 @@
+name: Publish BRAT beta
+run-name: BRAT beta for ${{ inputs.commit_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Full 40-character commit SHA to build (must be pushed to this repository)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brat-beta-${{ inputs.commit_sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+      version: ${{ steps.package.outputs.version }}
+    steps:
+      - name: Validate commit SHA
+        id: commit
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$COMMIT_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Provide a full 40-character commit SHA, not a branch or tag."
+            exit 1
+          fi
+          echo "sha=${COMMIT_SHA,,}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.commit.outputs.sha }}
+          persist-credentials: false
+      - name: Verify checked-out commit
+        env:
+          COMMIT_SHA: ${{ steps.commit.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$COMMIT_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Yarn
+        run: npm install --global yarn@1.22.22
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Run unit tests
+        run: yarn test --runInBand
+      - name: Lint
+        run: yarn lint-on-ci
+      - name: Build plugin
+        run: yarn build
+      - name: Package commit-pinned beta
+        id: package
+        env:
+          COMMIT_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(manifest.version);
+          if (!match) throw new Error('Expected a stable x.y.z version in the source manifest');
+          const parts = match.slice(1).map(Number);
+          if (parts.some((part) => !Number.isSafeInteger(part)) || !Number.isSafeInteger(parts[2] + 1)) {
+            throw new Error('Version components exceed safe integer limits');
+          }
+          const version = `${parts[0]}.${parts[1]}.${parts[2] + 1}-beta.sha-${process.env.COMMIT_SHA}`;
+          // Refuse a pre-existing staging directory rather than uploading stale files.
+          fs.mkdirSync('beta-release');
+          for (const file of ['main.js', 'styles.css']) {
+            if (!fs.lstatSync(file).isFile() || fs.statSync(file).size === 0) {
+              throw new Error(`Missing or empty release asset: ${file}`);
+            }
+            fs.copyFileSync(file, `beta-release/${file}`);
+          }
+          fs.writeFileSync('beta-release/manifest.json', JSON.stringify({ ...manifest, version }, null, 2) + '\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\n`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: brat-${{ steps.commit.outputs.sha }}
+          path: |
+            beta-release/main.js
+            beta-release/manifest.json
+            beta-release/styles.css
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: brat-${{ needs.build.outputs.sha }}
+          path: beta-release
+      # Keep the write token away from the source commit and its build scripts.
+      - name: Publish pinned prerelease
+        working-directory: beta-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Revalidate outputs from the read-only build job before using the write token.
+          [[ "$COMMIT_SHA" =~ ^[0-9a-fA-F]{40}$ ]]
+          COMMIT_SHA="${COMMIT_SHA,,}"
+          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-beta\.sha-$COMMIT_SHA$ ]]
+          for asset in main.js manifest.json styles.css; do
+            [[ -f "$asset" && -s "$asset" && ! -L "$asset" ]]
+          done
+          test "$(jq -r '.version' manifest.json)" = "$VERSION"
+          # A pre-existing tag may only be reused if it points at this exact commit.
+          # This endpoint returns [] for missing tags; authentication/network errors fail the job.
+          gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$VERSION" > tags.json
+          tag_type="$(jq -r --arg ref "refs/tags/$VERSION" '.[] | select(.ref == $ref) | .object.type' tags.json)"
+          tag_sha="$(jq -r --arg ref "refs/tags/$VERSION" '.[] | select(.ref == $ref) | .object.sha' tags.json)"
+          if [[ -n "$tag_type" ]]; then
+            if [[ "$tag_type" != commit || "$tag_sha" != "$COMMIT_SHA" ]]; then
+              echo "::error::Existing beta tag points to a different commit."
+              exit 1
+            fi
+          else
+            gh api --silent --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f "ref=refs/tags/$VERSION" -f "sha=$COMMIT_SHA"
+          fi
+          cat > notes.md <<EOF
+          Beta build of commit $COMMIT_SHA.
+
+          In BRAT, add $GITHUB_REPOSITORY and select the specific version:
+          $VERSION
+
+          This is a pinned test build, not a stable release. Back up your vault before testing.
+          EOF
+          # Never overwrite an existing release or mark this beta as the latest stable release.
+          gh release create "$VERSION" main.js manifest.json styles.css \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title "$VERSION" --notes-file notes.md
+          {
+            echo "### BRAT beta published"
+            echo "- Commit: \`$COMMIT_SHA\`"
+            echo "- Repository: \`$GITHUB_REPOSITORY\`"
+            echo "- Select this version in BRAT: \`$VERSION\`"
+            echo "- Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$VERSION"
+          } >> "$GITHUB_STEP_SUMMARY"
