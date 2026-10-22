@@ -10,9 +10,13 @@ export class TodoParser {
     this.dateParser = dateParser;
   }
 
-  async parseTasks(filePath: string, fileContents: string): Promise<TodoItem[]> {
+  async parseTasks(filePath: string, fileContents: string, outstandingOnly = false): Promise<TodoItem[]> {
     const pattern = /(-|\*) \[(\s|x)?\]\s(.*)/g;
-    return [...fileContents.matchAll(pattern)].map((task) => this.parseTask(filePath, task));
+    const todos: TodoItem[] = [];
+    for (const task of fileContents.matchAll(pattern)) {
+      if (!outstandingOnly || task[2] !== 'x') todos.push(this.parseTask(filePath, task));
+    }
+    return todos;
   }
 
   private parseTask(filePath: string, entry: RegExpMatchArray): TodoItem {

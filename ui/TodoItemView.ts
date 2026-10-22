@@ -12,6 +12,7 @@ enum TodoItemViewPane {
 }
 export interface TodoItemViewProps {
   todos: TodoItem[];
+  isIndexing?: boolean;
   formatDate: (date: DateTime) => string;
   openFile: (filePath: string) => void;
   toggleTodo: (todo: TodoItem, newStatus: TodoItemStatus) => void;
@@ -45,6 +46,11 @@ export class TodoItemView extends ItemView {
     return 'checkmark';
   }
 
+  onOpen(): Promise<void> {
+    this.render();
+    return Promise.resolve();
+  }
+
   onClose(): Promise<void> {
     return Promise.resolve();
   }
@@ -66,6 +72,9 @@ export class TodoItemView extends ItemView {
       el.createDiv('todo-item-view-toolbar', (el) => {
         this.renderToolBar(el);
       });
+      if (this.props.isIndexing) {
+        el.createDiv({ cls: 'todo-item-view-status', text: 'Loading tasks…', attr: { role: 'status' } });
+      }
       el.createDiv('todo-item-view-items', (el) => {
         this.renderItems(el);
       });

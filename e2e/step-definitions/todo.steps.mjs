@@ -195,3 +195,17 @@ async function waitForTask(description) {
   });
   return findTask(description);
 }
+
+When('I close and reopen the TODO view', async () => {
+  await browser.executeObsidian(
+    async ({ app }, id, type) => {
+      app.workspace.getLeavesOfType(type).forEach((leaf) => leaf.detach());
+      await app.plugins.plugins[id].initLeaf();
+      const leaf = app.workspace.getLeavesOfType(type)[0];
+      await app.workspace.revealLeaf(leaf);
+    },
+    pluginId,
+    viewType,
+  );
+  await browser.waitUntil(async () => (await browser.$$('.todo-item-view-toolbar-item')).length === 4);
+});

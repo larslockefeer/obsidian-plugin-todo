@@ -96,3 +96,15 @@ test('parsing an outstanding todo with a specific action date and a someday/mayb
   expect(todo.actionDate).toBeUndefined();
   expect(todo.isSomedayMaybeNote).toEqual(true);
 });
+
+test('indexing skips completed tasks before parsing dates and preserves source offsets', async () => {
+  const parser = new DateParser('#%date%', 'yyyy-MM-dd');
+  const parseDate = jest.spyOn(parser, 'parseDate');
+  const contents = '- [x] Completed #2021-02-16\n- [ ] Outstanding #2021-02-17';
+  const tasks = await new TodoParser(parser).parseTasks('Tasks.md', contents, true);
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0].description).toBe('Outstanding');
+  expect(tasks[0].startIndex).toBe(contents.indexOf('[ ]'));
+  expect(parseDate).toHaveBeenCalledTimes(1);
+  expect(parseDate).toHaveBeenCalledWith('Outstanding #2021-02-17');
+});

@@ -47,3 +47,10 @@ Feature: Review TODOs by category
     When I open the "Today" list
     Then I should see "Daily note task"
     And the due date for "Daily note task" should be "2000-05-25"
+
+  Scenario: Reopening the view shows tasks without waiting for a vault change
+    When I open the "Inbox" list
+    Then I should see "Inbox task"
+    When I close and reopen the TODO view
+    And I open the "Inbox" list
+    Then I should see "Inbox task"
