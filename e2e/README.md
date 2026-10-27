@@ -26,3 +26,8 @@ and someday tasks), daily-note dates, ordering, completion, opening source
 notes, and the documented date-format and new-leaf preferences. Preference
 values are set through the plugin API in scenario setup; the rendered task lists
 and note changes are still asserted through the running Obsidian app.
+
+The list scenarios also verify that closing and reopening the view retains the
+current index without requiring an edit to trigger a refresh. Index unit tests
+cover slow/concurrent reads and sync events during startup; the desktop runner
+does not measure mobile-device performance.

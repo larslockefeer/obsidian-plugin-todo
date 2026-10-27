@@ -31,12 +31,14 @@ export default class TodoPlugin extends Plugin {
       typeof loadedData === 'object' && loadedData !== null ? (loadedData as Partial<TodoPluginSettings>) : {};
     this.pluginSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
     this.dateFormatter = new DateFormatter(this.pluginSettings.dateFormat);
+    this.todoIndex.setSettings(this.pluginSettings);
     this.addSettingTab(new SettingsTab(this.app, this));
 
     this.registerView(VIEW_TYPE_TODO, (leaf: WorkspaceLeaf) => {
-      const todos: TodoItem[] = [];
+      const todos = this.todoIndex.getTodos();
       const props = {
         todos: todos,
+        isIndexing: this.todoIndex.isIndexing(),
         formatDate: (date: DateTime) => {
           return this.dateFormatter.formatDate(date);
         },
@@ -73,11 +75,11 @@ export default class TodoPlugin extends Plugin {
   }
 
   private async initializeView(): Promise<void> {
-    await this.initLeaf();
-    await this.triggerIndex();
+    await Promise.all([this.initLeaf(), this.triggerIndex()]);
   }
 
   onunload(): void {
+    this.todoIndex.dispose();
     this.app.workspace.getLeavesOfType(VIEW_TYPE_TODO).forEach((leaf) => leaf.detach());
   }
 
@@ -111,6 +113,7 @@ export default class TodoPlugin extends Plugin {
         leaf.view.setProps((currentProps: TodoItemViewProps) => ({
           ...currentProps,
           todos,
+          isIndexing: this.todoIndex.isIndexing(),
         }));
       }
     }

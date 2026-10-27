@@ -75,3 +75,8 @@ div.todo-item-view-item-link svg, div.todo-item-view-toolbar-item svg {
 div.todo-item-view-toolbar-item.active svg {
     fill: #7f6df2;
 }
+
+.todo-item-view-status {
+    padding: 10px;
+    color: var(--text-muted);
+}
